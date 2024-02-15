@@ -96,6 +96,24 @@ const TrackExercise = ({ currentUser }) => {
             onChange={(e) => setState({ ...state, duration: e.target.value })}
           />
         </Form.Group>
+        <Form.Group controlId="distance" style={{ marginBottom: '40px' }}>
+          <Form.Label>Distance (in km):</Form.Label>
+          <Form.Control 
+            type="number" 
+            required 
+            value={state.distance} 
+            onChange={(e) => setState({ ...state, distance: e.target.value })}
+          />
+        </Form.Group>
+        <Form.Group controlId="levelOfEffort" style={{ marginBottom: '40px' }}>
+          <Form.Label>Level of Effort (1-10 where 1 = easy and 10 = very hard):</Form.Label>
+          <Form.Control 
+            type="number" 
+            required 
+            value={state.distance} 
+            onChange={(e) => setState({ ...state, levelOfEffort: e.target.value })}
+          />
+        </Form.Group>
         <Button variant="success" type="submit">
           Save activity
         </Button>

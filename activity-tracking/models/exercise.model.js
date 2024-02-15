@@ -19,6 +19,28 @@ const exerciseSchema = new Schema(
         },
         min: [1, 'Duration should be positive.']
     },
+    distance: { 
+      type: Number, 
+      required: true,
+      validate: {
+          validator: function(value) {
+              return !isNaN(value);
+          },
+          message: 'Distance should be an integer.'
+        },
+      min: [0, 'Distance should be positive or zero.']
+    },
+    levelOfEffort: { 
+      type: Number, 
+      required: true,
+      validate: {
+          validator: function(value) {
+              // Check if the value is an integer between 1 and 10
+              return Number.isInteger(value) && value >= 1 && value <= 10;
+          },
+          message: 'Level of effort should be a whole number between 1 and 10.'
+        }
+    },
     date: { type: Date, required: true },
   },
   { timestamps: true }
