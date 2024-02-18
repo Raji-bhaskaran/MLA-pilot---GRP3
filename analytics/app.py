@@ -38,7 +38,9 @@ def stats():
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
             }
         },
         {
@@ -47,7 +49,9 @@ def stats():
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuration"
+                        "totalDuration": "$totalDuration",
+                        "totalDistance": "$totalDistance",
+                        "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
             }
@@ -77,7 +81,10 @@ def user_stats(username):
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$totalDistance"},
+                "avgLevelOfEffort": {"$avg": "$avgLevelOfEffort"}
+
             }
         },
         {
@@ -86,7 +93,9 @@ def user_stats(username):
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuration"
+                        "totalDuration": "$totalDuratiion",
+                        "totalDistance": "$totalDistance",
+                        "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
             }

@@ -26,7 +26,7 @@ const exerciseSchema = new Schema(
           validator: function(value) {
               return !isNaN(value);
           },
-          message: 'Distance should be an integer.'
+          message: 'Distance should be a number.'
         },
       min: [0, 'Distance should be positive or zero.']
     },

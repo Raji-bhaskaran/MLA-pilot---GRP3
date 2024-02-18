@@ -110,7 +110,7 @@ const TrackExercise = ({ currentUser }) => {
           <Form.Control 
             type="number" 
             required 
-            value={state.distance} 
+            value={state.levelOfEffort} 
             onChange={(e) => setState({ ...state, levelOfEffort: e.target.value })}
           />
         </Form.Group>
