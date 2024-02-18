@@ -66,6 +66,15 @@ def stats():
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
+
+    # Calculate pace (seconds per km) for each exercise type
+    for user_stats in stats:
+        for exercise in user_stats['exercises']:
+            if exercise['totalDistance'] != 0 and exercise['totalDuration'] != 0:
+                exercise['avgPace'] = exercise['totalDuration'] * 60 / exercise['totalDistance']  # Convert minutes to seconds
+            else:
+                exercise['avgPace'] = None  # Handle division by zero
+
     return jsonify(stats=stats)
 
 
@@ -82,8 +91,8 @@ def user_stats(username):
                     "exerciseType": "$exerciseType"
                 },
                 "totalDuration": {"$sum": "$duration"},
-                "totalDistance": {"$sum": "$totalDistance"},
-                "avgLevelOfEffort": {"$avg": "$avgLevelOfEffort"}
+                "totalDistance": {"$sum": "$distance"},
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
 
             }
         },
@@ -93,7 +102,7 @@ def user_stats(username):
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuratiion",
+                        "totalDuration": "$totalDuration",
                         "totalDistance": "$totalDistance",
                         "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
@@ -110,6 +119,15 @@ def user_stats(username):
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
+
+    # Calculate pace (seconds per km) for each exercise type
+    for user_stats in stats:
+        for exercise in user_stats['exercises']:
+            if exercise['totalDistance'] != 0 and exercise['totalDuration'] != 0 :
+                exercise['avgPace'] = exercise['totalDuration'] * 60 / exercise['totalDistance']  # Convert minutes to seconds
+            else:
+                exercise['avgPace'] = None  # Handle division by zero
+
     return jsonify(stats=stats)
 
 
@@ -144,13 +162,19 @@ def weekly_user_stats():
                 "_id": {
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgPace": {"$avg": {"$divide": [{"$multiply": ["$duration", 60]}, "$distance"]}},  # Convert minutes to seconds
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
             }
         },
         {
             "$project": {
                 "exerciseType": "$_id.exerciseType",
                 "totalDuration": 1,
+                "totalDistance": 1,
+                "avgPace": 1,
+                "avgLevelOfEffort": 1,
                 "_id": 0
             }
         }
