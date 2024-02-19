@@ -16,6 +16,8 @@ const TrackExercise = ({ currentUser }) => {
     exerciseType: '',
     description: '',
     duration: 0,
+    distance: 0,
+    levelOfEffort: 0,
     date: new Date(),
   });
   const [message, setMessage] = useState(''); 
@@ -36,6 +38,8 @@ const TrackExercise = ({ currentUser }) => {
         exerciseType: '',
         description: '',
         duration: 0,
+        distance: 0,
+        levelOfEffort: '',
         date: new Date(),
       });
 
@@ -94,6 +98,7 @@ const TrackExercise = ({ currentUser }) => {
             required 
             value={state.duration} 
             onChange={(e) => setState({ ...state, duration: e.target.value })}
+            min={1}
           />
         </Form.Group>
         <Form.Group controlId="distance" style={{ marginBottom: '40px' }}>
@@ -103,6 +108,7 @@ const TrackExercise = ({ currentUser }) => {
             required 
             value={state.distance} 
             onChange={(e) => setState({ ...state, distance: e.target.value })}
+            min={0.01}
           />
         </Form.Group>
         <Form.Group controlId="levelOfEffort" style={{ marginBottom: '40px' }}>
@@ -112,6 +118,9 @@ const TrackExercise = ({ currentUser }) => {
             required 
             value={state.levelOfEffort} 
             onChange={(e) => setState({ ...state, levelOfEffort: e.target.value })}
+            min={1} // Set the minimum value to 1
+            max={10} // Set the maximum value to 10
+            step={1} // Set the step to 1 to enforce whole numbers
           />
         </Form.Group>
         <Button variant="success" type="submit">
