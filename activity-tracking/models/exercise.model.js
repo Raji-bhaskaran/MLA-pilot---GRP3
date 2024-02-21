@@ -30,17 +30,7 @@ const exerciseSchema = new Schema(
         },
       min: [0, 'Distance should be positive or zero.']
     },
-    levelOfEffort: { 
-      type: Number, 
-      required: true,
-      validate: {
-          validator: function(value) {
-              // Check if the value is an integer between 1 and 10
-              return Number.isInteger(value) && value >= 1 && value <= 10;
-          },
-          message: 'Level of effort should be a whole number between 1 and 10.'
-        }
-    },
+    levelOfEffort: { type: Number, required: true},
     date: { type: Date, required: true },
   },
   { timestamps: true }

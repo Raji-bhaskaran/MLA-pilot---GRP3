@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
+import FormRange from 'react-bootstrap/FormRange';
 import { trackExercise } from '../api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import IconButton from '@material-ui/core/IconButton';
@@ -108,21 +109,14 @@ const TrackExercise = ({ currentUser }) => {
             required 
             value={state.distance} 
             onChange={(e) => setState({ ...state, distance: e.target.value })}
-            min={0.01}
+            min={0.00}
+            step="0.01"
           />
         </Form.Group>
-        <Form.Group controlId="levelOfEffort" style={{ marginBottom: '40px' }}>
-          <Form.Label>Level of Effort (1-10 where 1 = easy and 10 = very hard):</Form.Label>
-          <Form.Control 
-            type="number" 
-            required 
-            value={state.levelOfEffort} 
-            onChange={(e) => setState({ ...state, levelOfEffort: e.target.value })}
-            min={1} // Set the minimum value to 1
-            max={10} // Set the maximum value to 10
-            step={1} // Set the step to 1 to enforce whole numbers
-          />
-        </Form.Group>
+        <div style={{ marginBottom: '40px' }}></div>
+        <Form.Label>Level of Effort (left = easy, right = hard)</Form.Label>
+        <Form.Range onChange={(e) => setState({ ...state, levelOfEffort: e.target.value })} />
+        <div style={{ marginBottom: '40px' }}></div>
         <Button variant="success" type="submit">
           Save activity
         </Button>
