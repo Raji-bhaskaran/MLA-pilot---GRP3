@@ -9,6 +9,8 @@ import traceback
 import logging
 import os
 from datetime import datetime, timedelta
+from ariadne import load_schema_from_path, make_executable_schema, graphql_sync, ObjectType, QueryType
+from ariadne.constants import PLAYGROUND_HTML
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}},
@@ -21,6 +23,60 @@ mongo_db = os.getenv('MONGO_DB')
 client = MongoClient(mongo_uri)
 db = client[mongo_db]
 
+query = QueryType()
+type_defs = load_schema_from_path("schema.graphql")
+
+@app.route('/api/graphql', methods=['GET'])
+def graphql_playground():
+    print("Received a get request")
+    return PLAYGROUND_HTML, 200
+
+@app.route('/api/graphql', methods=['POST'])
+def graphql_server():
+    print("Getting a request...")
+    data = request.get_json()
+    success, result = graphql_sync(
+        schema,
+        data,
+        context_value=request,
+        debug=True
+    )
+    status_code = 200 if success else 400
+    return jsonify(result), status_code
+
+@query.field("stats")
+def resolve_stats(_, info):
+    try:
+        print("Resolving the list stats info")
+        loadedStats = stats()
+        print(loadedStats)
+        payload = {
+            "success": True,
+            "results": loadedStats
+        }
+    except Exception as error:
+        payload = {
+            "success": False,
+            "errors": [str(error)]
+        }
+    return payload
+
+@query.field("filteredStats")
+def resolve_filteredStats(*_, name=None):
+    try:
+        print("Resolving the list stats info")
+        loadedStats = user_stats(name)
+        print(loadedStats)
+        payload = {
+            "success": True,
+            "results": loadedStats
+        }
+    except Exception as error:
+        payload = {
+            "success": False,
+            "errors": [str(error)]
+        }
+    return payload
 
 @app.route('/')
 def index():
@@ -62,7 +118,7 @@ def stats():
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
-    return jsonify(stats=stats)
+    return stats
 
 
 @app.route('/stats/<username>', methods=['GET'])
@@ -101,8 +157,9 @@ def user_stats(username):
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
-    return jsonify(stats=stats)
+    return stats
 
+schema = make_executable_schema(type_defs, query)
 
 @app.route('/stats/weekly/', methods=['GET'])
 def weekly_user_stats():
@@ -149,7 +206,7 @@ def weekly_user_stats():
 
     try:
         stats = list(db.exercises.aggregate(pipeline))
-        return jsonify(stats=stats)
+        return stats
     except Exception as e:
         current_app.logger.error(f"An error occurred while querying MongoDB: {e}")
         traceback.print_exc()
