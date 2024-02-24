@@ -94,9 +94,7 @@ def stats():
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"},
-                "totalDistance": {"$sum": "$distance"},
-                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
+                "totalDuration": {"$sum": "$duration"}
             }
         },
         {
@@ -105,9 +103,7 @@ def stats():
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuration",
-                        "totalDistance": "$totalDistance",
-                        "avgLevelOfEffort": "$avgLevelOfEffort"
+                        "totalDuration": "$totalDuration"
                     }
                 }
             }
@@ -122,7 +118,16 @@ def stats():
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
-    return jsonify(stats=stats)
+
+    # Calculate pace (seconds per km) for each exercise type
+    for user_stats in stats:
+        for exercise in user_stats['exercises']:
+            if exercise['totalDistance'] != 0 and exercise['totalDuration'] != 0:
+                exercise['avgPace'] = exercise['totalDuration'] * 60 / exercise['totalDistance']  # Convert minutes to seconds
+            else:
+                exercise['avgPace'] = None  # Handle division by zero
+
+    return stats
 
 
 @app.route('/stats/<username>', methods=['GET'])
@@ -137,10 +142,7 @@ def user_stats(username):
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"},
-                "totalDistance": {"$sum": "$distance"},
-                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
-
+                "totalDuration": {"$sum": "$duration"}
             }
         },
         {
@@ -149,9 +151,7 @@ def user_stats(username):
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuration",
-                        "totalDistance": "$totalDistance",
-                        "avgLevelOfEffort": "$avgLevelOfEffort"
+                        "totalDuration": "$totalDuration"
                     }
                 }
             }
@@ -166,7 +166,15 @@ def user_stats(username):
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
-    return jsonify(stats=stats)
+
+    # Calculate pace (seconds per km) for each exercise type
+    for user_stats in stats:
+        for exercise in user_stats['exercises']:
+            if exercise['totalDistance'] != 0 and exercise['totalDuration'] != 0 :
+                exercise['avgPace'] = exercise['totalDuration'] * 60 / exercise['totalDistance']  # Convert minutes to seconds
+            else:
+                exercise['avgPace'] = None  # Handle division by zero
+    return stats
 
 schema = make_executable_schema(type_defs, query)
 
@@ -201,19 +209,13 @@ def weekly_user_stats():
                 "_id": {
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"},
-                "totalDistance": {"$sum": "$distance"},
-                "avgPace": {"$avg": {"$divide": [{"$multiply": ["$duration", 60]}, "$distance"]}},  # Convert minutes to seconds
-                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
+                "totalDuration": {"$sum": "$duration"}
             }
         },
         {
             "$project": {
                 "exerciseType": "$_id.exerciseType",
                 "totalDuration": 1,
-                "totalDistance": 1,
-                "avgPace": 1,
-                "avgLevelOfEffort": 1,
                 "_id": 0
             }
         }
