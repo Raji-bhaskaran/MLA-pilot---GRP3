@@ -94,7 +94,9 @@ def stats():
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
             }
         },
         {
@@ -103,7 +105,9 @@ def stats():
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuration"
+                        "totalDuration": "$totalDuration",
+                        "totalDistance": "$totalDistance",
+                        "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
             }
@@ -118,7 +122,7 @@ def stats():
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
-    return stats
+    return jsonify(stats=stats)
 
 
 @app.route('/stats/<username>', methods=['GET'])
@@ -133,7 +137,10 @@ def user_stats(username):
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
+
             }
         },
         {
@@ -142,7 +149,9 @@ def user_stats(username):
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuration"
+                        "totalDuration": "$totalDuration",
+                        "totalDistance": "$totalDistance",
+                        "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
             }
@@ -157,7 +166,7 @@ def user_stats(username):
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
-    return stats
+    return jsonify(stats=stats)
 
 schema = make_executable_schema(type_defs, query)
 
@@ -192,13 +201,19 @@ def weekly_user_stats():
                 "_id": {
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgPace": {"$avg": {"$divide": [{"$multiply": ["$duration", 60]}, "$distance"]}},  # Convert minutes to seconds
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
             }
         },
         {
             "$project": {
                 "exerciseType": "$_id.exerciseType",
                 "totalDuration": 1,
+                "totalDistance": 1,
+                "avgPace": 1,
+                "avgLevelOfEffort": 1,
                 "_id": 0
             }
         }
