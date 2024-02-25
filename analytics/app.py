@@ -158,7 +158,7 @@ def user_stats(username):
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
                         "totalDuration": "$totalDuration",
-                         "totalDistance": "$totalDistance",
+                        "totalDistance": "$totalDistance",
                         "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
@@ -217,7 +217,7 @@ def weekly_user_stats():
                 "_id": {
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
                 "totalDistance": {"$sum": "$distance"},
                 "avgPace": {"$avg": {"$divide": [{"$multiply": ["$duration", 60]}, "$distance"]}},  # Convert minutes to seconds
                 "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
