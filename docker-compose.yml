@@ -1,40 +1,40 @@
 version: '3.8'
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    networks:
-      - app-network
+ # frontend:
+  #  build:
+   #   context: ./frontend
+   #   dockerfile: Dockerfile
+   # ports:
+   #   - "80:80"
+   # networks:
+   #   - app-network
 
-  activity-tracking:
-    build:
-      context: ./activity-tracking
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=development
-    ports:
-      - "5300:5300"
-    depends_on:
-      - mongodb
-    networks:
-      - app-network
+#  activity-tracking:
+ #   build:
+  #    context: ./activity-tracking
+   #   dockerfile: Dockerfile
+   # environment:
+    #  - NODE_ENV=development
+    #ports:
+    #  - "5300:5300"
+    #depends_on:
+    #  - mongodb
+    #networks:
+    #  - app-network
 
-  analytics:
-    build:
-      context: ./analytics
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=development
-      - MONGO_URI=mongodb://root:cfgmla23@mongodb:27017
-    ports:
-      - "5050:5050"
-    depends_on:
-      - mongodb
-    networks:
-      - app-network
+  #analytics:
+  #  build:
+  #    context: ./analytics
+  #    dockerfile: Dockerfile
+  #  environment:
+  #    - NODE_ENV=development
+   #   - MONGO_URI=mongodb://root:cfgmla23@mongodb:27017
+   # ports:
+   #   - "5050:5050"
+   # depends_on:
+   #   - mongodb
+   # networks:
+   #   - app-network
 
   authservice:
     build:
@@ -53,8 +53,8 @@ services:
   mongodb:
     image: mongo:latest
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=cfgmla23
+     - MONGO_INITDB_ROOT_USERNAME=root
+     - MONGO_INITDB_ROOT_PASSWORD=cfgmla23
     ports:
       - "27017:27017"
     volumes:
