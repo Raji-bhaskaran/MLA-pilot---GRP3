@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-
-import java.util.regex.Pattern;
+import java.time.LocalDateTime;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -43,13 +41,31 @@ public class AuthController {
         return ResponseEntity.ok("User registered successfully!");
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody User user) {
+
+       @PostMapping("/login")
+        public ResponseEntity<?> authenticateUser(@RequestBody User user) {
         User existingUser = userRepository.findByUsername(user.getUsername());
 
         if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
+            // Reset failed login attempts count on successful login
+            existingUser.setFailedLoginAttempts(0);
+            existingUser.setLastFailedLogin(null);
+            userRepository.save(existingUser);
             return ResponseEntity.ok("User authenticated");
         } else {
+            // Increment failed login attempts count and update timestamp
+            if (existingUser != null) {
+                existingUser.setFailedLoginAttempts(existingUser.getFailedLoginAttempts() + 1);
+                existingUser.setLastFailedLogin(LocalDateTime.now());
+                userRepository.save(existingUser);
+                
+                // Check if the user's account should be locked
+                if (existingUser.getFailedLoginAttempts() >= 3 && existingUser.getLastFailedLogin() != null
+                        && existingUser.getLastFailedLogin().plusMinutes(30).isAfter(LocalDateTime.now())) {
+                    // Account locked due to too many failed attempts
+                    return ResponseEntity.status(401).body("Your account is locked. Please try again later.");
+                }
+            }
             return ResponseEntity.status(401).body("Invalid credentials");
         }
     }
@@ -83,46 +99,3 @@ public class AuthController {
         return digit && upperCase && lowerCase && specialChar;
     }
 }
-
-
-
-
-
-
-
-
-
-/*@RestController
-@CrossOrigin(origins = "*", allowedHeaders = "*")
-@RequestMapping("/api/auth")
-public class AuthController {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        if (userRepository.existsByUsername(user.getUsername())) {
-            return ResponseEntity.badRequest().body("User already exists - please log in");
-        }
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return ResponseEntity.ok("User registered successfully!");
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody User user) {
-        User existingUser = userRepository.findByUsername(user.getUsername());
-
-        if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
-            return ResponseEntity.ok("User authenticated");
-        } else {
-            return ResponseEntity.status(401).body("Invalid credentials");
-        }
-    }
-}
-*/

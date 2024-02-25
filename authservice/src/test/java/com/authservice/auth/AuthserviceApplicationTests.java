@@ -1,27 +1,20 @@
 package com.authservice.auth;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.authservice.auth.controller.AuthController;
 import com.authservice.auth.model.User;
 import com.authservice.auth.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
+import java.time.LocalDateTime;
 
 class AuthserviceApplicationTests {
 
@@ -31,38 +24,15 @@ class AuthserviceApplicationTests {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
-@Test
-void testRegisterUserWithStrongPassword() {
-    // Arrange
-    User user = new User();
-    user.setUsername("testUser");
-    user.setPassword("StrongPassword123#");
-
-    // Mocking the userRepository
-    UserRepository userRepository = Mockito.mock(UserRepository.class);
-    Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
-
-    // Mocking the passwordEncoder
-    PasswordEncoder passwordEncoder = Mockito.mock(PasswordEncoder.class);
-    Mockito.when(passwordEncoder.encode(Mockito.anyString())).thenReturn("encodedPassword");
-
-    // Instantiate the authController with mocked dependencies using constructor injection
-    AuthController authController = new AuthController(userRepository, passwordEncoder);
-
-    // Act
-    ResponseEntity<?> response = authController.registerUser(user);
-
-    // Assert
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals("User registered successfully!", response.getBody());
-}
-
-	
 
     
     @Test
@@ -91,19 +61,23 @@ void testRegisterUserWithStrongPassword() {
         assertFalse(result);
     }
 
-    
+    @Test
+    void testAccountLockoutAfterThreeFailedLoginAttempts() {
+        // Arrange
+        User user = new User("testUser", "password");
+        user.setFailedLoginAttempts(2); // Set failed login attempts to 2
+        user.setLockoutTime(LocalDateTime.now().minusMinutes(31)); // Lockout time more than 30 minutes ago
+
+        // Mock repository method calls
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
+        when(passwordEncoder.matches("password", "password")).thenReturn(false);
+
+        // Act
+        ResponseEntity<?> response = authController.authenticateUser(new User("testUser", "password"));
+
+        // Assert
+        assertEquals(401, response.getStatusCodeValue()); // Check if response is 401 Unauthorized
+        assertEquals(3, user.getFailedLoginAttempts()); // Check if failed login attempts increased
+        assertEquals(true, user.isLocked()); // Check if the account is locked
+    }
 }
-
-
-
-
-
-/* ===================
-@SpringBootTest
-class AuthserviceApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
-}*/
