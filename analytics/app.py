@@ -94,7 +94,9 @@ def stats():
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
             }
         },
         {
@@ -104,6 +106,8 @@ def stats():
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
                         "totalDuration": "$totalDuration"
+                        "totalDistance": "$totalDistance",
+                        "avgLevelOfEffort": "$avgLevelOfEffort
                     }
                 }
             }
@@ -142,7 +146,9 @@ def user_stats(username):
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
             }
         },
         {
@@ -151,7 +157,9 @@ def user_stats(username):
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuration"
+                        "totalDuration": "$totalDuration",
+                         "totalDistance": "$totalDistance",
+                        "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
             }
@@ -216,6 +224,8 @@ def weekly_user_stats():
             "$project": {
                 "exerciseType": "$_id.exerciseType",
                 "totalDuration": 1,
+                "avgPace": 1,
+                "avgLevelOfEffort": 1,
                 "_id": 0
             }
         }
