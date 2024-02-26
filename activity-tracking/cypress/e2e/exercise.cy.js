@@ -10,12 +10,14 @@ describe('Exercise API', () => {
         exerciseType: 'Running',
         description: 'Running 5km',
         duration: 30,
+        distance: 4,
+        levelOfEffort: 1,
         date: new Date()
       }
     }).then((response) => {
       expect(response.status).to.eq(200);
       expect(response.body.message).to.eq('Exercise added!');
-      id = response.body._id; 
+      id = response.body._id;
     });
   });
 
