@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 
@@ -62,15 +63,18 @@ class AuthserviceApplicationTests {
     }
 
     @Test
-    void testAccountLockoutAfterThreeFailedLoginAttempts() {
+    void testPermanentAccountLockoutAfterThreeFailedLoginAttempts() {
         // Arrange
         User user = new User("testUser", "password");
         user.setFailedLoginAttempts(2); // Set failed login attempts to 2
-        user.setLockoutTime(LocalDateTime.now().minusMinutes(31)); // Lockout time more than 30 minutes ago
 
-        // Mock repository method calls
+        UserRepository userRepository = mock(UserRepository.class);
         when(userRepository.findByUsername("testUser")).thenReturn(user);
+
+        PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
         when(passwordEncoder.matches("password", "password")).thenReturn(false);
+
+        AuthController authController = new AuthController(userRepository, passwordEncoder);
 
         // Act
         ResponseEntity<?> response = authController.authenticateUser(new User("testUser", "password"));
@@ -78,6 +82,6 @@ class AuthserviceApplicationTests {
         // Assert
         assertEquals(401, response.getStatusCodeValue()); // Check if response is 401 Unauthorized
         assertEquals(3, user.getFailedLoginAttempts()); // Check if failed login attempts increased
-        assertEquals(true, user.isLocked()); // Check if the account is locked
+        assertEquals(false, user.isAccountNonLocked()); // Check if the account is permanently locked
     }
 }

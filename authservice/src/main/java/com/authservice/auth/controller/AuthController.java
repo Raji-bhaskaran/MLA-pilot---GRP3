@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
+
+
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/api/auth")
@@ -19,11 +21,11 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-   // Constructor to inject dependencies
-   public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-       this.userRepository = userRepository;
-       this.passwordEncoder = passwordEncoder;
-   }
+    // Constructor to inject dependencies
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
@@ -41,33 +43,36 @@ public class AuthController {
         return ResponseEntity.ok("User registered successfully!");
     }
 
+    @PostMapping("/login")
+public ResponseEntity<?> authenticateUser(@RequestBody User user) {
+    User existingUser = userRepository.findByUsername(user.getUsername());
 
-       @PostMapping("/login")
-        public ResponseEntity<?> authenticateUser(@RequestBody User user) {
-        User existingUser = userRepository.findByUsername(user.getUsername());
-
-        if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
-            // Reset failed login attempts count on successful login
-            existingUser.setFailedLoginAttempts(0);
-            existingUser.setLastFailedLogin(null);
+    if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
+        // Reset failed login attempts count on successful login
+        existingUser.setFailedLoginAttempts(0);
+        userRepository.save(existingUser);
+        return ResponseEntity.ok("User authenticated");
+    } else {
+        // Increment failed login attempts count
+        if (existingUser != null) {
+            existingUser.setFailedLoginAttempts(existingUser.getFailedLoginAttempts() + 1);
             userRepository.save(existingUser);
-            return ResponseEntity.ok("User authenticated");
-        } else {
-            // Increment failed login attempts count and update timestamp
-            if (existingUser != null) {
-                existingUser.setFailedLoginAttempts(existingUser.getFailedLoginAttempts() + 1);
-                existingUser.setLastFailedLogin(LocalDateTime.now());
-                userRepository.save(existingUser);
-                
-                // Check if the user's account should be locked
-                if (existingUser.getFailedLoginAttempts() >= 3 && existingUser.getLastFailedLogin() != null
-                        && existingUser.getLastFailedLogin().plusMinutes(30).isAfter(LocalDateTime.now())) {
-                    // Account locked due to too many failed attempts
-                    return ResponseEntity.status(401).body("Your account is locked. Please try again later.");
-                }
+
+            // Check if the user's account should be locked
+            if (existingUser.getFailedLoginAttempts() >= 3) {
+                // Account locked due to too many failed attempts
+                lockAccount(existingUser);
+                return ResponseEntity.status(401).body("Your account has been permanently locked due to multiple failed login attempts.");
             }
-            return ResponseEntity.status(401).body("Invalid credentials");
         }
+        return ResponseEntity.status(401).body("Invalid credentials");
+    }
+}
+
+    // Method to lock the user account permanently
+    public void lockAccount(User user) {
+        user.setAccountNonLocked(false);
+        userRepository.save(user);
     }
 
     // Method to check if the password meets the strength criteria
