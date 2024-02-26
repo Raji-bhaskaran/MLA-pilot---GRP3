@@ -9,7 +9,7 @@ import traceback
 import logging
 import os
 from datetime import datetime, timedelta
-from ariadne import load_schema_from_path, make_executable_schema, graphql_sync, ObjectType, QueryType
+from ariadne import load_schema_from_path, make_executable_schema, graphql_sync, QueryType
 from ariadne.constants import PLAYGROUND_HTML
 
 app = Flask(__name__)
@@ -23,9 +23,11 @@ mongo_db = os.getenv('MONGO_DB')
 client = MongoClient(mongo_uri)
 db = client[mongo_db]
 
-query = QueryType()
+# Load GraphQL schema
 type_defs = load_schema_from_path("schema.graphql")
+query = QueryType()
 
+# GraphQL routes
 @app.route('/api/graphql', methods=['GET'])
 def graphql_playground():
     print("Received a get request")
@@ -44,6 +46,7 @@ def graphql_server():
     status_code = 200 if success else 400
     return jsonify(result), status_code
 
+# GraphQL resolvers
 @query.field("stats")
 def resolve_stats(_, info):
     try:
@@ -77,14 +80,15 @@ def resolve_filteredStats(*_, name=None):
             "errors": [str(error)]
         }
     return payload
-
+    
+# Existing Flask routes
 @app.route('/')
 def index():
     exercises = db.exercises.find()
     exercises_list = list(exercises)
     return json_util.dumps(exercises_list)
 
-
+# Existing functions
 @app.route('/stats')
 def stats():
     pipeline = [
@@ -184,9 +188,10 @@ def user_stats(username):
                 exercise['avgPace'] = None  # Handle division by zero
     return stats
 
+# Create GraphQL schema
 schema = make_executable_schema(type_defs, query)
 
-@app.route('/stats/weekly/', methods=['GET'])
+@app.route('/api/stats/weekly/', methods=['GET'])
 def weekly_user_stats():
     username = request.args.get('user')
     start_date_str = request.args.get('start')
@@ -242,8 +247,6 @@ def weekly_user_stats():
         current_app.logger.error(f"An error occurred while querying MongoDB: {e}")
         traceback.print_exc()
         return jsonify(error="An internal error occurred"), 500
-
-
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5050)
