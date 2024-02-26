@@ -191,7 +191,7 @@ def user_stats(username):
 # Create GraphQL schema
 schema = make_executable_schema(type_defs, query)
 
-@app.route('/api/stats/weekly/', methods=['GET'])
+@app.route('/stats/weekly/', methods=['GET'])
 def weekly_user_stats():
     username = request.args.get('user')
     start_date_str = request.args.get('start')
@@ -242,7 +242,7 @@ def weekly_user_stats():
 
     try:
         stats = list(db.exercises.aggregate(pipeline))
-        return stats
+        return jsonify(stats=stats)
     except Exception as e:
         current_app.logger.error(f"An error occurred while querying MongoDB: {e}")
         traceback.print_exc()

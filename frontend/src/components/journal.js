@@ -41,30 +41,24 @@ const Journal = ({ currentUser }) => {
 
   const convertToMinSecs = (seconds) => {
     const result = new Date(seconds * 1000).toISOString().substring(14, 19);
-    return result;
-  };
+
+    return result; 
+  }
 
   return (
     <div className="journal-container">
       <h4>Weekly Exercise Journal</h4>
       <br></br>
       <div className="date-range">
-        <Button className="button-small" onClick={goToPreviousWeek}>
-          &larr; Previous
-        </Button>
-        <span>
-          {moment(startDate).format('YYYY-MM-DD')} to {moment(endDate).format('YYYY-MM-DD')}
-        </span>
-        <Button className="button-small" onClick={goToNextWeek}>
-          Next &rarr;
-        </Button>
-      </div>
+        <Button className="button-small" onClick={goToPreviousWeek}>&larr; Previous</Button>
+        <span>{moment(startDate).format('YYYY-MM-DD')} to {moment(endDate).format('YYYY-MM-DD')}</span>
+        <Button className="button-small" onClick={goToNextWeek}>Next &rarr;</Button>
+        </div>
       <ul>
         {exercises && exercises.length > 0 ? (
           exercises.map((exercise, index) => (
             <li key={index} className="exercise-journal-data">
-              {exercise.exerciseType} - {exercise.totalDuration} minutes - {exercise.totalDistance} km -{' '}
-              {convertToMinSecs(exercise.avgPace)} avg per km
+              {exercise.exerciseType} - {exercise.totalDuration} minutes - {exercise.totalDistance} km - {convertToMinSecs(exercise.avgPace)} avg per km
             </li>
           ))
         ) : (
