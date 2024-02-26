@@ -22,7 +22,7 @@ function App() {
 
   const handleLogin = (username) => {
     setIsLoggedIn(true);
-    setCurrentUser('Rana');
+    setCurrentUser(username);
   };
 
   return (

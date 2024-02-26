@@ -12,6 +12,7 @@ module.exports = {
       'white': '#FFFFFF',
       'black': '#000000',
       'success': '#55C24F',
+      'fail': '#F00A0A'
     },
   },
   plugins: [],
