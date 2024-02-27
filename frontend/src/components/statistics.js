@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { MenuItem, Select } from '@material-ui/core';
-import ExercisesIcon from './icon';
+import React, { useState, useEffect } from "react";
+import { MenuItem, Select } from "@material-ui/core";
+import ExercisesIcon from "./icon";
 
 const Statistics = ({ currentUser }) => {
   const [data, setData] = useState([]);
-  const [selectedActivity, setSelectedActivity] = useState('all');
+  const [selectedActivity, setSelectedActivity] = useState("all");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,19 +31,21 @@ const Statistics = ({ currentUser }) => {
       };
 
       try {
-        const response = await fetch('http://localhost:5050/api/graphql', {
-          method: 'POST',
+        const response = await fetch("http://localhost:5050/api/graphql", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({ query, variables }),
         });
 
-        const { data: { filteredStats } } = await response.json();
+        const {
+          data: { filteredStats },
+        } = await response.json();
         const userData = filteredStats.results[0];
         setData(userData);
       } catch (error) {
-        console.error('There was an error fetching the data!', error);
+        console.error("There was an error fetching the data!", error);
       }
     };
 
@@ -61,50 +63,68 @@ const Statistics = ({ currentUser }) => {
 
   const getLevelOfEffortLabel = (levelOfEffort) => {
     if (levelOfEffort >= 80) {
-      return 'Very High Effort';
+      return "Very High Effort";
     } else if (levelOfEffort >= 60) {
-      return 'High Effort';
+      return "High Effort";
     } else if (levelOfEffort >= 40) {
-      return 'Moderate Effort';
+      return "Moderate Effort";
     } else if (levelOfEffort >= 20) {
-      return 'Low Effort';
+      return "Low Effort";
     } else {
-      return 'Very Low Effort';
+      return "Very Low Effort";
     }
   };
 
   return (
     <>
-      <h4 className="p-7">Well done, {currentUser}! This is your overall effort:</h4>
+      <h4 className="p-7">
+        Well done, {currentUser}! This is your overall effort:
+      </h4>
       <div className="p-7 bg-black text-white rounded-b-2xl drop-shadow-md">
-        <Select value={selectedActivity} onChange={handleSelectChange} style={{
-          backgroundColor: '#D3FF86',
-          padding: '10px',
-          margin: '10px',
-          borderRadius: '16px',
-          '& .MuiSelectNativeInput': {
-            border: 'none',
-          },
-          '& .MuiSelectRoot': {
-            border: 'none',
-          },
-        }}>
+        <Select
+          value={selectedActivity}
+          onChange={handleSelectChange}
+          style={{
+            backgroundColor: "#D3FF86",
+            padding: "10px",
+            margin: "10px",
+            borderRadius: "16px",
+            "& .MuiSelectNativeInput": {
+              border: "none",
+            },
+            "& .MuiSelectRoot": {
+              border: "none",
+            },
+          }}
+        >
           <MenuItem value="all">All Activities</MenuItem>
           <MenuItem value="Gym">Gym</MenuItem>
           <MenuItem value="Swimming">Swimming</MenuItem>
           <MenuItem value="Cycling">Cycling</MenuItem>
+          <MenuItem value="Running">Running</MenuItem>
           <MenuItem value="Other">Other</MenuItem>
         </Select>
         {data && data.exercises ? (
-          data.exercises.filter((item) => selectedActivity === 'all' ? item : item.exerciseType === selectedActivity).map((item, index) => (
-            <div key={index} className='p-2'>
-              <div className='text-light-green'><ExercisesIcon icon={item.exerciseType} /><strong>{item.exerciseType}</strong></div>
-              <div>Total Duration: {item.totalDuration} min</div>
-              <div>Total Distance: {item.totalDistance} km</div>
-              <div>Avg Pace: {convertToMinSecs(item.avgPace)} per km</div>
-              <div>Avg Effort: {getLevelOfEffortLabel(item.avgLevelOfEffort)}</div>
-            </div>
-          ))
+          data.exercises
+            .filter((item) =>
+              selectedActivity === "all"
+                ? item
+                : item.exerciseType === selectedActivity
+            )
+            .map((item, index) => (
+              <div key={index} className="p-2">
+                <div className="text-light-green">
+                  <ExercisesIcon icon={item.exerciseType} />
+                  <strong>{item.exerciseType}</strong>
+                </div>
+                <div>Total Duration: {item.totalDuration} min</div>
+                <div>Total Distance: {item.totalDistance} km</div>
+                <div>Avg Pace: {convertToMinSecs(item.avgPace)} per km</div>
+                <div>
+                  Avg Effort: {getLevelOfEffortLabel(item.avgLevelOfEffort)}
+                </div>
+              </div>
+            ))
         ) : (
           <p>No data available</p>
         )}
