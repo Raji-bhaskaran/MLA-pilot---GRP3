@@ -1,66 +1,92 @@
-import React, { useState } from 'react';
-import { Button, Form, Alert } from 'react-bootstrap';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Alert } from "react-bootstrap";
+import { Field, Form, Formik } from "formik";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import Button from "./button";
+import * as yup from "yup";
 
 const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', {
-        username,
-        password,
-      });
-
-      if (response.status === 200) {
-        onLogin(username);
-      } else {
-        setError('Invalid credentials');
-      }
-    } catch (err) {
-      setError('Failed to login');
-    }
-};
+  const LoginSchema = yup.object().shape({
+    username: yup.string().required("Username is required"),
+    password: yup.string().required("Password is required"),
+  });
 
   return (
-    <div className="login-container">
+    <div className="p-7">
+      <Formik
+        initialValues={{ username: "", password: "" }}
+        validationSchema={LoginSchema}
+        onSubmit={async (values, actions) => {
+          try {
+            const response = await axios.post(
+              "http://localhost:8080/api/auth/login",
+              values
+            );
 
-      {error && <Alert variant="danger">{error}</Alert>}
+            if (response.status === 200) {
+              onLogin(values.username);
+            } else {
+              actions.setFieldError("general", "Invalid credentials");
+            }
+          } catch (err) {
+            actions.setFieldError("general", "Failed to login");
+          } finally {
+            actions.setSubmitting(false);
+          }
+        }}
+      >
+        {({
+          values,
+          errors,
+          touched,
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          isSubmitting,
+        }) => (
+          <Form onSubmit={handleSubmit}>
+            {errors.general && <Alert variant="danger">{errors.general}</Alert>}
+            <div className="flex flex-col">
+              <h3>Username</h3>
+              <Field
+                type="text"
+                placeholder="Enter username"
+                name="username"
+                value={values.username}
+                onChange={handleChange}
+                isInvalid={touched.username && !!errors.username}
+                className="p-2 rounded-lg h-10 text-xl"
+              />
+              <p className="text-fail mt-2">{errors.username}</p>
+            </div>
 
-      <Form onSubmit={handleLogin}>
-        <Form.Group controlId="formUsername">
-          <Form.Label>Username</Form.Label>
-          <Form.Control 
-            type="text" 
-            placeholder="Enter username" 
-            value={username} 
-            onChange={(e) => setUsername(e.target.value)} 
-          />
-        </Form.Group>
+            <div className="flex flex-col mb-10">
+              <h3>Password</h3>
+              <Field
+                type="password"
+                placeholder="Password"
+                name="password"
+                value={values.password}
+                onChange={handleChange}
+                isInvalid={touched.password && !!errors.password}
+                className="p-2 rounded-lg h-10 text-xl"
+              />
+              <p className="text-fail mt-2">{errors.password}</p>
+            </div>
+            <Button variant="primary" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Logging in..." : "Login"}
+            </Button>
+          </Form>
+        )}
+      </Formik>
 
-        <Form.Group controlId="formPassword">
-          <Form.Label>Password</Form.Label>
-          <Form.Control 
-            type="password" 
-            placeholder="Password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-          />
-        </Form.Group>
-
-        <Button variant="primary" type="submit" style={{ marginTop: '20px' }}>
-          Login
-        </Button>
-      </Form>
-
-      <p className="mt-3">
-    Don't have an account? <Link to="/signup">Sign up</Link>
-</p>
+      <p className="mt-6">
+        Don't have an account?{" "}
+        <Link to="/signup" className="text-red-pink">
+          Sign up
+        </Link>
+      </p>
     </div>
   );
 };
