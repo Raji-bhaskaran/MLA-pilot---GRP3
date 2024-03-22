@@ -40,12 +40,21 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody User loginUser) {
         User existingUser = userRepository.findByUsername(loginUser.getUsername());
-
+    
         if (existingUser == null) {
             return ResponseEntity.status(401).body("User not found");
         } else if (existingUser.isAccountLocked()) {
-            return ResponseEntity.badRequest().body("Account is locked. Please try again later.");
-        } else if (passwordEncoder.matches(loginUser.getPassword(), existingUser.getPassword())) {
+            if (isLockoutExpired(existingUser)) {
+                // Reset account and allow login attempt
+                resetAccount(existingUser);
+                existingUser = userRepository.save(existingUser); // Save the changes
+            } else {
+                // Account is still locked
+                return ResponseEntity.status(401).body("Account is locked. Please try again later.");
+            }
+        }
+    
+        if (passwordEncoder.matches(loginUser.getPassword(), existingUser.getPassword())) {
             existingUser.resetFailedLoginAttempts(); // Reset failed login attempts
             userRepository.save(existingUser);
             return ResponseEntity.ok("User authenticated");
@@ -57,35 +66,35 @@ public class AuthController {
 
     public void handleFailedLogin(User user) {
         // Increment failed login attempts only if the current value is less than the threshold
-        if (user.getFailedLoginAttempts() < LOCKOUT_THRESHOLD_ATTEMPTS) {
-            user.incrementFailedLoginAttempts(); // Increment failed login attempts
-        }
-    
-        // Check if failed attempts exceed the threshold
+        user.incrementFailedLoginAttempts();
         if (user.getFailedLoginAttempts() >= LOCKOUT_THRESHOLD_ATTEMPTS) {
-            user.setAccountLocked(true); // Set account as permanently locked
+            lockAccount(user);
         }
-            /*LocalDateTime lastFailedAttempt = user.getLockoutTimestamp();
-            LocalDateTime now = LocalDateTime.now();
-            Duration duration = Duration.between(lastFailedAttempt, now);
-    
-            // Check if the duration since the last failed attempt exceeds the lockout duration
-            if (duration.toMinutes() <= LOCKOUT_DURATION_MINUTES) {
-                //user.setLockoutTimestamp(LocalDateTime.now());
-                user.setAccountLocked(true); // Set account as locked
-                userRepository.save(user);
-
-            } else {
-                
-                user.setLockoutTimestamp(null); // Reset lockout timestamp
-                user.resetFailedLoginAttempts(); // Reset failed attempts
-            }
-        }    */
-
         userRepository.save(user);
-        
+    }
+
+    private void lockAccount(User user) {
+        user.setAccountLocked(true);
+        user.setLockoutTimestamp(LocalDateTime.now());
+    }
+
+    private void resetAccount(User user) {
+        user.resetFailedLoginAttempts();
+        user.setAccountLocked(false);
+        user.setLockoutTimestamp(null);
+    }
+
+    private boolean isLockoutExpired(User user) {
+        LocalDateTime lockoutTimestamp = user.getLockoutTimestamp();
+        if (lockoutTimestamp == null) {
+            return true; // Account is not locked
+        }
+        LocalDateTime now = LocalDateTime.now();
+        Duration duration = Duration.between(lockoutTimestamp, now);
+        return duration.toMinutes() >= LOCKOUT_DURATION_MINUTES;
     }
     
+      
      
 
     @PostMapping("/signup")
