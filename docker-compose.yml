@@ -24,6 +24,21 @@ services:
     networks:
       - app-network
 
+  health-tracking:
+    build:
+      context: ./health-tracking
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - MONGO_DB=health
+      - MONGO_URI=mongodb://root:cfgmla23@mongodb:27017
+    ports:
+      - "5301:5301"
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+
   analytics:
     build:
       context: ./analytics
