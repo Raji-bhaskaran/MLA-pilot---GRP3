@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import 'bootstrap/dist/css/bootstrap.min.css';
 import NavbarComponent from './components/navbar';
 import TrackExercise from './components/trackExercise';
+import TrackHealth from './components/trackHealth';
 import Statistics from './components/statistics';
 import Footer from './components/footer';
 import Login from './components/login';
@@ -44,6 +45,7 @@ function App() {
                 setCurrentUser(username);
               }} />} />
               <Route path="/trackExercise" element={isLoggedIn ? <TrackExercise currentUser={currentUser} /> : <Navigate to="/login" />} />
+              <Route path="/trackHealth" element={isLoggedIn ? <TrackHealth currentUser={currentUser} /> : <Navigate to="/login" />} />
               <Route path="/statistics" element={isLoggedIn ? <Statistics currentUser={currentUser} /> : <Navigate to="/login" />} />
               <Route path="/journal" element={isLoggedIn ? <Journal currentUser={currentUser} /> : <Navigate to="/login" />} />
               <Route path="/" element={isLoggedIn ? <Navigate to="/trackExercise" /> : <Navigate to="/login" />} />
