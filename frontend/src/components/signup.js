@@ -3,6 +3,7 @@ import { Form, Alert } from "react-bootstrap";
 import { Field, Formik } from "formik";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import config from '../config';
 import * as yup from "yup";
 import Button from "./button";
 import { CheckCircleOutlineOutlined, CloseOutlined } from "@material-ui/icons";
@@ -74,7 +75,7 @@ const Signup = ({ onSignup }) => {
         onSubmit={async (values, actions) => {
           try {
             const response = await axios.post(
-              "http://localhost:8080/api/auth/signup",
+              `${config.apiUrl}/auth/signup`,
               values
             );
 

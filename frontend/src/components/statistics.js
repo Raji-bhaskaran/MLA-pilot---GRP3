@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { MenuItem, Select } from "@material-ui/core";
 import ExercisesIcon from "./icon";
+import config from '../config';
 
 const Statistics = ({ currentUser }) => {
   const [data, setData] = useState([]);
@@ -31,7 +32,7 @@ const Statistics = ({ currentUser }) => {
       };
 
       try {
-        const response = await fetch("http://localhost:5050/api/graphql", {
+        const response = await fetch(`${config.apiUrl}/api/graphql`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -3,6 +3,7 @@ import { Alert } from "react-bootstrap";
 import { Field, Form, Formik } from "formik";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import config from '../config';
 import Button from "./button";
 import * as yup from "yup";
 
@@ -20,7 +21,7 @@ const Login = ({ onLogin }) => {
         onSubmit={async (values, actions) => {
           try {
             const response = await axios.post(
-              "http://localhost:8080/api/auth/login",
+              `${config.apiUrl}/auth/login`,
               values
             );
 
