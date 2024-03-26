@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form } from "react-bootstrap";
-import { trackHealth } from "../api";
+import { trackHealth } from "../apiHealth";
 import "bootstrap/dist/css/bootstrap.min.css";
 import IconButton from "@material-ui/core/IconButton";
 import VeryDissatisfiedIcon from "@material-ui/icons/SentimentVeryDissatisfied";
