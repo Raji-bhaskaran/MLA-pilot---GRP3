@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 router.post('/add', async (req, res) => {
   console.log(req.body)
   try {
-    const { username, tiredness, stress, weight, height, date } = req.body;
+    const { username, tiredness, stress, weight, height, restingHeartRate, bloodPressure, date } = req.body;
 
     const newHealth = new Health({
       username,
@@ -25,6 +25,8 @@ router.post('/add', async (req, res) => {
       stress,
       weight: Number(weight),
       height: Number(height),
+      restingHeartRate: Number(restingHeartRate),
+      bloodPressure,
       date: Date.parse(date),
     });
 
@@ -66,9 +68,9 @@ router.delete('/:id', async (req, res) => {
 // PUT: Update health data by ID
 router.put('/update/:id', async (req, res) => {
     try {
-      const { username, tiredness, stress, height, weight, date } = req.body;
+      const { username, tiredness, stress, height, weight, restingHeartRate, bloodPressure, date } = req.body;
 
-      if (!username || !tiredness || !stress || !weight || !height || !date) {
+      if (!username || !tiredness || !stress || !weight || !height || !restingHeartRate || !bloodPressure || !date) {
         res.status(400).json({ error: 'All fields are required' });
         return;
       }
@@ -84,6 +86,8 @@ router.put('/update/:id', async (req, res) => {
       health.stress = stress;
       health.weight = Number(weight);
       health.height = Number(height);
+      health.restingHeartRate = Number(restingHeartRate);
+      health.bloodPressure = bloodPressure;
       health.date = new Date(date);
 
       await health.save();

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form } from "react-bootstrap";
 import { trackHealth } from "../apiHealth";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -18,16 +18,24 @@ import Button from "./button";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#D3FF86",
+      main: "#023020",
     },
     secondary: {
-      main: "#FFFFFF",
+      main: "#000000",
     },
   },
 });
 
 const TrackHealth = ({ currentUser }) => {
   const [message, setMessage] = useState("");
+  const [lastHeight, setLastHeight] = useState("");
+
+  useEffect(() => {
+    const storedHeight = localStorage.getItem("lastHeight");
+    if (storedHeight) {
+      setLastHeight(storedHeight);
+    }
+  }, []);
 
   const TrackHealthSchema = yup.object().shape({
     date: yup.string().required(),
@@ -39,6 +47,12 @@ const TrackHealth = ({ currentUser }) => {
     weight: yup
       .number()
       .min(0.1, "Please enter a number above 0.1"),
+    restingHeartRate: yup
+      .number()
+      .min(0.1, "Please enter a number above 0.1"),
+    bloodPressure: yup
+      .string()
+      .matches(/^\d{2,3}\/\d{2,3}$/, 'Blood pressure must be in format "XX/XX"'),
   });
 
   return (
@@ -48,28 +62,30 @@ const TrackHealth = ({ currentUser }) => {
           initialValues={{
             tiredness: "",
             stress: "",
-            height: "",
+            height: lastHeight || "",
             weight: "",
+            restingHeartRate: "",
             date: new Date(),
           }}
           validationSchema={TrackHealthSchema}
           onSubmit={async (values, { resetForm }) => {
-            console.log(values);
-
             const dataToSubmit = {
               username: currentUser,
               ...values,
             };
-
-            console.log(dataToSubmit);
-
+          
             try {
               const response = await trackHealth(dataToSubmit);
               console.log(response.data);
-
-              resetForm();
+          
+              // Update lastHeight state and localStorage
+              setLastHeight(values.height);
+              localStorage.setItem("lastHeight", values.height);
+          
               setMessage("Health data added successfully! Well done!");
               setTimeout(() => setMessage(""), 5000);
+              
+              resetForm();
             } catch (error) {
               console.error("There was an error logging your data!", error);
             }
@@ -99,9 +115,11 @@ const TrackHealth = ({ currentUser }) => {
                     className="border border-grey rounded px-3 py-2 focus:border-red-pink text-lg"
                   />
                 </Form.Group>
-                <div className="bg-black w-full justify-center">
+              </div>
+
+              <div className="w-full justify-center">
                 <Form.Label>
-                    <h4 className="mr-6 text-white">Tiredness:</h4>
+                    <h4 className="mr-6 text-black">Tiredness:</h4>
                   </Form.Label>
                   <ThemeProvider theme={theme}>
                     <IconButton
@@ -160,8 +178,9 @@ const TrackHealth = ({ currentUser }) => {
                       <VerySatisfiedIcon fontSize="large" />
                     </IconButton>
                   </ThemeProvider>{" "}
+                  <div className="w-full justify-center"></div>
                   <Form.Label>
-                    <h4 className="mr-6 text-white">Stress:</h4>
+                    <h4 className="mr-6 text-black">Stress:</h4>
                   </Form.Label>
                   <ThemeProvider theme={theme}>
                     <IconButton
@@ -178,7 +197,7 @@ const TrackHealth = ({ currentUser }) => {
                     <IconButton
                       name="stress"
                       color={
-                        values.tiredness === "Stressed"
+                        values.stress === "Stressed"
                           ? "primary"
                           : "secondary"
                       }
@@ -221,9 +240,8 @@ const TrackHealth = ({ currentUser }) => {
                     </IconButton>
                   </ThemeProvider>{" "}  
                 </div>
-              </div>
               
-              <div className="p-7 flex-col">
+                <div className="p-7 flex-col">
                 <div className="flex justify-around">
                   <Form.Group controlId="height" className="mb-10">
                     <Form.Label>
@@ -233,6 +251,7 @@ const TrackHealth = ({ currentUser }) => {
                       type="number"
                       name="height"
                       className="form-control"
+                      step="0.1"
                     />
                     <ErrorMessage
                       name="height"
@@ -256,6 +275,42 @@ const TrackHealth = ({ currentUser }) => {
                       className="text-red-pink"
                     />
                   </Form.Group>
+                </div>
+                </div>
+
+                <div className="p-7 flex-col">
+                <div className="flex justify-around">
+                  <Form.Group controlId="restingHeartRate" className="mb-10">
+                    <Form.Label>
+                      <h4>Resting Heart Rate:</h4>
+                    </Form.Label>
+                    <Field
+                      type="number"
+                      name="restingHeartRate"
+                      className="form-control"
+                    />
+                    <ErrorMessage
+                      name="restingHeartRate"
+                      component="div"
+                      className="text-red-pink"
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="bloodPressure" className="mb-10">
+                  <Form.Label>
+                    <h4>Blood Pressure:</h4>
+                  </Form.Label>
+                  <Field
+                    type="text"
+                    name="bloodPressure"
+                    className="form-control"
+                    placeholder="eg. 120/80"
+                  />
+                  <ErrorMessage
+                    name="bloodPressure"
+                    component="div"
+                    className="text-red-pink"
+                  />
+                </Form.Group>
                 </div>
 
                 <div className="flex gap-3 justify-center">
