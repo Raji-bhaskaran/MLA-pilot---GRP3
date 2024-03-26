@@ -1,0 +1,27 @@
+schema {
+    query: Query
+}
+
+type Stats{
+    username: String!
+    exercises: [Exercise]
+}
+
+type Exercise {
+  exerciseType: String!
+  totalDuration: Float!
+  totalDistance: Float!
+  avgLevelOfEffort: Float!
+  avgPace: Float
+}
+
+type StatsResult {
+  success: Boolean!
+  errors: [String]
+  results: [Stats]
+}
+
+type Query {
+    stats: StatsResult
+    filteredStats(name: String): StatsResult
+}
