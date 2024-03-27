@@ -18,7 +18,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-     environment:
+    environment:
       - REACT_APP_API_GATEWAY_URL=nginx
     networks:
       - app-network
