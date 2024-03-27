@@ -19,7 +19,7 @@ import CustomSlider from "./customSlider";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#D3FF86",
+      main: "#0ADD08",
     },
     secondary: {
       main: "#FFFFFF",
@@ -99,7 +99,7 @@ const TrackExercise = ({ currentUser }) => {
           }) => (
             <FormikForm onSubmit={handleSubmit}>
               <div className="flex-col bg-black pb-6">
-                <h3 className="text-white py-6">Track exercise</h3>
+                <h3 className="text-white py-6">Track Exercise</h3>
                 <Form.Group controlId="formDate" className="mb-6">
                   <Form.Label>
                     <h4 className="mr-6 text-white">Date:</h4>

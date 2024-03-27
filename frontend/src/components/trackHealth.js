@@ -18,7 +18,7 @@ import Button from "./button";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#023020",
+      main: "#0ADD08",
     },
     secondary: {
       main: "#000000",
@@ -28,14 +28,17 @@ const theme = createTheme({
 
 const TrackHealth = ({ currentUser }) => {
   const [message, setMessage] = useState("");
-  const [lastHeight, setLastHeight] = useState("");
-
-  useEffect(() => {
+  const [lastHeight, setLastHeight] = useState(() => {
     const storedHeight = localStorage.getItem("lastHeight");
-    if (storedHeight) {
-      setLastHeight(storedHeight);
-    }
-  }, []);
+    return storedHeight || ""; // Return stored height if exists, otherwise default to empty string
+  });
+
+  // Update lastHeight state whenever height field changes
+  const handleHeightChange = (event) => {
+    const { value } = event.target;
+    setLastHeight(value);
+    localStorage.setItem("lastHeight", value);
+  };
 
   const TrackHealthSchema = yup.object().shape({
     date: yup.string().required(),
@@ -65,6 +68,7 @@ const TrackHealth = ({ currentUser }) => {
             height: lastHeight || "",
             weight: "",
             restingHeartRate: "",
+            bloodPressure: "",
             date: new Date(),
           }}
           validationSchema={TrackHealthSchema}
@@ -102,7 +106,7 @@ const TrackHealth = ({ currentUser }) => {
           }) => (
             <FormikForm onSubmit={handleSubmit}>
               <div className="flex-col bg-black pb-6">
-                <h3 className="text-white py-6">Track health data</h3>
+                <h3 className="text-white py-6">Track Health Data</h3>
                 <Form.Group controlId="formDate" className="mb-6">
                   <Form.Label>
                     <h4 className="mr-6 text-white">Date:</h4>
