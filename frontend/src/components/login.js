@@ -3,10 +3,12 @@ import { Alert } from "react-bootstrap";
 import { Field, Form, Formik } from "formik";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import Button from "./button";
+import Button from './button';
 import * as yup from "yup";
 
 const Login = ({ onLogin }) => {
+  
+  
   const LoginSchema = yup.object().shape({
     username: yup.string().required("Username is required"),
     password: yup.string().required("Password is required"),
@@ -23,18 +25,25 @@ const Login = ({ onLogin }) => {
               "http://localhost:8080/api/auth/login",
               values
             );
-
+        
             if (response.status === 200) {
               onLogin(values.username);
+            } 
+          } catch (error) {
+              if (error.response && error.response.status === 401) {
+                 actions.setFieldError("general", "Invalid username or password");
+            } else if (error.response && error.response.status === 403) {
+                 actions.setFieldError("general", "Account is locked. Please try again later.");
             } else {
-              actions.setFieldError("general", "Invalid credentials");
+              actions.setFieldError("general", "Failed to login. Please try again later.");
+              
             }
-          } catch (err) {
-            actions.setFieldError("general", "Failed to login");
           } finally {
             actions.setSubmitting(false);
           }
         }}
+        
+        
       >
         {({
           values,

@@ -50,7 +50,7 @@ public class AuthController {
                 existingUser = userRepository.save(existingUser); // Save the changes
             } else {
                 // Account is still locked
-                return ResponseEntity.status(401).body("Account is locked. Please try again later.");
+                return ResponseEntity.status(403).body("Account is locked. Please try again later.");
             }
         }
     
