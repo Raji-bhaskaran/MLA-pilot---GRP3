@@ -26,11 +26,15 @@ const Login = ({ onLogin }) => {
 
             if (response.status === 200) {
               onLogin(values.username);
+            } 
+          } catch (error) {
+              if (error.response && error.response.status === 401) {
+                 actions.setFieldError("general", "Invalid username or password");
+            } else if (error.response && error.response.status === 403) {
+                 actions.setFieldError("general", "Account is locked. Please try again later.");
             } else {
-              actions.setFieldError("general", "Invalid credentials");
+              actions.setFieldError("general", "Failed to login. Please try again later.");
             }
-          } catch (err) {
-            actions.setFieldError("general", "Failed to login");
           } finally {
             actions.setSubmitting(false);
           }

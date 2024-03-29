@@ -60,7 +60,7 @@ class AuthserviceApplicationTests {
         ResponseEntity<?> response = authController.authenticateUser(new User("lockedUser", "password", 0, false, null));
         
         // Assert
-        assertEquals(401, response.getStatusCodeValue());
+        assertEquals(403, response.getStatusCodeValue());
         assertEquals("Account is locked. Please try again later.", response.getBody());
     }
 
