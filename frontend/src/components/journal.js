@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button } from 'react-bootstrap';
 import moment from 'moment';
-import './journal.css';
+import Button from './button';
+import ExercisesIcon from './icon';
+import config from '../config';
 
 const Journal = ({ currentUser }) => {
   const [startDate, setStartDate] = useState(moment().startOf('week').toDate());
@@ -11,7 +12,7 @@ const Journal = ({ currentUser }) => {
 
   const fetchExercises = async () => {
     try {
-      const url = `http://localhost:5050/stats/weekly/?user=${currentUser}&start=${moment(startDate).format('YYYY-MM-DD')}&end=${moment(endDate).format('YYYY-MM-DD')}`;
+      const url = `${config.apiUrl}/stats/weekly/?user=${currentUser}&start=${moment(startDate).format('YYYY-MM-DD')}&end=${moment(endDate).format('YYYY-MM-DD')}`;
       const response = await axios.get(url);
       console.log('API Response:', response.data);
       if (response.data.stats && Array.isArray(response.data.stats)) {
@@ -39,27 +40,35 @@ const Journal = ({ currentUser }) => {
     setEndDate(moment(endDate).add(1, 'weeks').endOf('week').toDate());
   };
 
+  const convertToMinSecs = (seconds) => {
+    const result = new Date(seconds * 1000).toISOString().substring(14, 19);
+
+    return result;
+  }
+
   return (
-    <div className="journal-container">
-      <h4>Weekly Exercise Journal</h4>
-      <br></br>
-      <div className="date-range">
-        <Button className="button-small" onClick={goToPreviousWeek}>&larr; Previous</Button>
-        <span>{moment(startDate).format('YYYY-MM-DD')} to {moment(endDate).format('YYYY-MM-DD')}</span>
-        <Button className="button-small" onClick={goToNextWeek}>Next &rarr;</Button>
-        </div>
-      <ul>
-        {exercises && exercises.length > 0 ? (
-          exercises.map((exercise, index) => (
-            <li key={index} className="exercise-journal-data">
-              {exercise.exerciseType} - {exercise.totalDuration} minutes
-            </li>
-          ))
-        ) : (
-          <li>No exercises found for this period.</li>
-        )}
-      </ul>
-    </div>
+    <>
+      <h4 className="p-7">Weekly Exercise Journal</h4>
+      <div className="flex justify-between items-center font-bold bg-grey">
+        <Button variant='secondary' size='sm' onClick={goToPreviousWeek} >&larr; Previous</Button>
+        <p className='text-black m-0 text-lg'>{moment(startDate).format('YYYY-MM-DD')} to {moment(endDate).format('YYYY-MM-DD')}</p>
+        <Button variant='secondary' size='sm' onClick={goToNextWeek}>Next &rarr;</Button>
+      </div>
+      <div className="p-7 bg-black text-white rounded-b-2xl drop-shadow-md">
+        <br></br>
+        <ul>
+          {exercises && exercises.length > 0 ? (
+            exercises.map((exercise, index) => (
+              <li key={index} className="mb-2">
+                <span className="font-bold text-light-green"><ExercisesIcon icon={exercise.exerciseType} /> {exercise.exerciseType}</span> - {exercise.totalDuration} minutes - {exercise.totalDistance} km - {convertToMinSecs(exercise.avgPace)} avg per km
+              </li>
+            ))
+          ) : (
+            <li>No exercises found for this period.</li>
+          )}
+        </ul>
+      </div >
+    </>
   );
 };
 

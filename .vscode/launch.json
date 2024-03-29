@@ -2,13 +2,24 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "AuthApplication",
+            "request": "launch",
+            "mainClass": "com.authservice.auth.AuthApplication",
+            "projectName": "mla"
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Launch Node.js Program",
-            "skipFiles": ["<node_internals>/**"],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
             "program": "${workspaceFolder}/app.js",
             "preLaunchTask": "npm: install",
-            "outFiles": ["${workspaceFolder}/out/**/*.js"]
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ]
         },
         {
             "name": "Python: Current File",

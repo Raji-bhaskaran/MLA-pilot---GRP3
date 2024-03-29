@@ -1,0 +1,8 @@
+/workspaces/MLA-pilot---GRP3/authservice/src/main/java/com/authservice/auth/AuthApplication.java
+/workspaces/MLA-pilot---GRP3/authservice/src/main/java/com/authservice/auth/config/SecurityConfig.java
+/workspaces/MLA-pilot---GRP3/authservice/src/main/java/com/authservice/auth/controller/AuthController.java
+/workspaces/MLA-pilot---GRP3/authservice/src/main/java/com/authservice/auth/filter/AccountLockoutFilter.java
+/workspaces/MLA-pilot---GRP3/authservice/src/main/java/com/authservice/auth/model/User.java
+/workspaces/MLA-pilot---GRP3/authservice/src/main/java/com/authservice/auth/repository/UserRepository.java
+/workspaces/MLA-pilot---GRP3/authservice/src/main/java/com/authservice/auth/service/AuthService.java
+/workspaces/MLA-pilot---GRP3/authservice/src/main/java/com/authservice/auth/service/MyService.java

@@ -1,0 +1,4 @@
+{
+    "mongoUri": "mongodb://root:cfgmla23@mongodb:27017",
+    "mongoDb": "health"
+  }

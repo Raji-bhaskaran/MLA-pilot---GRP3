@@ -8,7 +8,9 @@ const config = require('./config.json');
 
 const app = express();
 const port = process.env.PORT || 5300;
-const mongoUri = process.env.MONGODB_URI || config.mongoUri; // Fallback to config if env var is not set
+const baseUri = process.env.MONGO_URI || config.mongoUri;
+const database = process.env.MONGO_DB || config.mongoDb;
+const mongoUri = `${baseUri}/${database}?authsource=admin`;
 
 // Middleware setup
 app.use(cors());

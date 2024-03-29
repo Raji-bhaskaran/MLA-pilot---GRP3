@@ -1,41 +1,36 @@
 import React from 'react';
-import { Navbar, Nav } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const NavbarComponent = ({ onLogout }) => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const NavButton = ({ onClick, route, children }) => (
+    <button
+      onClick={onClick}
+      className={pathname === route ? 'bg-red-pink-dark text-white w-full px-4 py-2' : 'bg-red-pink text-white hover:bg-red-pink-dark w-full px-4 py-2'}
+    >
+      {children}
+    </button>
+  );
 
   const onNavigate = (route) => {
-    console.log('Navigating to:', route);  
-    switch(route) {
-      case 'TrackExercise':
-        navigate('/trackExercise');
-        break;
-      case 'Statistics':
-        navigate('/statistics');
-        break;
-      case 'Journal':
-        navigate('/journal');
-        break;
-      default:
-        console.error('Invalid route:', route);
-    }
+    console.log('Navigating to:', route);
+    navigate(route);
+  };
+
+  const handleLogout = () => {
+    onLogout();
   };
 
   return (
-    <Navbar className="nav-back custom-navbar" expand="lg">
-      <Navbar.Toggle aria-controls="basic-navbar-nav" />
-      <Navbar.Collapse id="basic-navbar-nav">
-        <Nav className="mr-auto">
-        <Nav>
-          <Nav.Link className="custom-nav-link" onClick={() => onNavigate('TrackExercise')}>Track New Exercise</Nav.Link>
-          <Nav.Link className="custom-nav-link" onClick={() => onNavigate('Statistics')}>Statistics</Nav.Link>
-          <Nav.Link className="custom-nav-link" onClick={() => onNavigate('Journal')}>Weekly Journal</Nav.Link>
-          <Nav.Link className="custom-nav-link" onClick={onLogout}>Logout</Nav.Link>
-        </Nav>
-        </Nav>
-      </Navbar.Collapse>
-    </Navbar>
+    <div className='flex w-full justify-around'>
+      <NavButton onClick={() => onNavigate('/trackExercise')} route="/trackExercise">Track New Exercise</NavButton>
+      <NavButton onClick={() => onNavigate('/trackHealth')} route="/trackHealth">Track Health Data</NavButton>
+      <NavButton onClick={() => onNavigate('/statistics')} route="/statistics">Statistics</NavButton>
+      <NavButton onClick={() => onNavigate('/journal')} route="/journal">Weekly Journal</NavButton>
+      <NavButton onClick={handleLogout} route="/">Logout</NavButton>
+    </div>
   );
 };
 

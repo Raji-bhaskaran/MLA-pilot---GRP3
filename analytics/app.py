@@ -10,6 +10,8 @@ import traceback
 import logging
 import os
 from datetime import datetime, timedelta
+from ariadne import load_schema_from_path, make_executable_schema, graphql_sync, QueryType
+from ariadne.constants import PLAYGROUND_HTML
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
@@ -24,14 +26,72 @@ client = MongoClient(mongo_uri)
 db = client[mongo_db]
 
 metrics.info('app_info', 'Application info', version='1.0.3')
+# Load GraphQL schema
+type_defs = load_schema_from_path("schema.graphql")
+query = QueryType()
 
+# GraphQL routes
+@app.route('/api/graphql', methods=['GET'])
+def graphql_playground():
+    print("Received a get request")
+    return PLAYGROUND_HTML, 200
+
+@app.route('/api/graphql', methods=['POST'])
+def graphql_server():
+    print("Getting a request...")
+    data = request.get_json()
+    success, result = graphql_sync(
+        schema,
+        data,
+        context_value=request,
+        debug=True
+    )
+    status_code = 200 if success else 400
+    return jsonify(result), status_code
+
+# GraphQL resolvers
+@query.field("stats")
+def resolve_stats(_, info):
+    try:
+        print("Resolving the list stats info")
+        loadedStats = stats()
+        print(loadedStats)
+        payload = {
+            "success": True,
+            "results": loadedStats
+        }
+    except Exception as error:
+        payload = {
+            "success": False,
+            "errors": [str(error)]
+        }
+    return payload
+
+@query.field("filteredStats")
+def resolve_filteredStats(*_, name=None):
+    try:
+        print("Resolving the list stats info")
+        loadedStats = user_stats(name)
+        print(loadedStats)
+        payload = {
+            "success": True,
+            "results": loadedStats
+        }
+    except Exception as error:
+        payload = {
+            "success": False,
+            "errors": [str(error)]
+        }
+    return payload
+    
+# Existing Flask routes
 @app.route('/')
 def index():
     exercises = db.exercises.find()
     exercises_list = list(exercises)
     return json_util.dumps(exercises_list)
 
-
+# Existing functions
 @app.route('/stats')
 def stats():
     pipeline = [
@@ -41,7 +101,9 @@ def stats():
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
             }
         },
         {
@@ -50,7 +112,9 @@ def stats():
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuration"
+                        "totalDuration": "$totalDuration",
+                        "totalDistance": "$totalDistance",
+                        "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
             }
@@ -65,7 +129,16 @@ def stats():
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
-    return jsonify(stats=stats)
+
+    # Calculate pace (seconds per km) for each exercise type
+    for user_stats in stats:
+        for exercise in user_stats['exercises']:
+            if exercise['totalDistance'] != 0 and exercise['totalDuration'] != 0:
+                exercise['avgPace'] = exercise['totalDuration'] * 60 / exercise['totalDistance']  # Convert minutes to seconds
+            else:
+                exercise['avgPace'] = None  # Handle division by zero
+
+    return stats
 
 
 @app.route('/stats/<username>', methods=['GET'])
@@ -80,7 +153,9 @@ def user_stats(username):
                     "username": "$username",
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
             }
         },
         {
@@ -89,7 +164,9 @@ def user_stats(username):
                 "exercises": {
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
-                        "totalDuration": "$totalDuration"
+                        "totalDuration": "$totalDuration",
+                        "totalDistance": "$totalDistance",
+                        "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
             }
@@ -104,8 +181,18 @@ def user_stats(username):
     ]
 
     stats = list(db.exercises.aggregate(pipeline))
-    return jsonify(stats=stats)
 
+    # Calculate pace (seconds per km) for each exercise type
+    for user_stats in stats:
+        for exercise in user_stats['exercises']:
+            if exercise['totalDistance'] != 0 and exercise['totalDuration'] != 0 :
+                exercise['avgPace'] = exercise['totalDuration'] * 60 / exercise['totalDistance']  # Convert minutes to seconds
+            else:
+                exercise['avgPace'] = None  # Handle division by zero
+    return stats
+
+# Create GraphQL schema
+schema = make_executable_schema(type_defs, query)
 
 @app.route('/stats/weekly/', methods=['GET'])
 def weekly_user_stats():
@@ -138,13 +225,19 @@ def weekly_user_stats():
                 "_id": {
                     "exerciseType": "$exerciseType"
                 },
-                "totalDuration": {"$sum": "$duration"}
+                "totalDuration": {"$sum": "$duration"},
+                "totalDistance": {"$sum": "$distance"},
+                "avgPace": {"$avg": {"$divide": [{"$multiply": ["$duration", 60]}, "$distance"]}},  # Convert minutes to seconds
+                "avgLevelOfEffort": {"$avg": "$levelOfEffort"}
             }
         },
         {
             "$project": {
                 "exerciseType": "$_id.exerciseType",
                 "totalDuration": 1,
+                "totalDistance": 1,
+                "avgPace": 1,
+                "avgLevelOfEffort": 1,
                 "_id": 0
             }
         }
@@ -157,8 +250,6 @@ def weekly_user_stats():
         current_app.logger.error(f"An error occurred while querying MongoDB: {e}")
         traceback.print_exc()
         return jsonify(error="An internal error occurred"), 500
-
-
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5050)
