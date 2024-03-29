@@ -26,6 +26,7 @@ const NavbarComponent = ({ onLogout }) => {
   return (
     <div className='flex w-full justify-around'>
       <NavButton onClick={() => onNavigate('/trackExercise')} route="/trackExercise">Track New Exercise</NavButton>
+      <NavButton onClick={() => onNavigate('/trackHealth')} route="/trackHealth">Track Health Data</NavButton>
       <NavButton onClick={() => onNavigate('/statistics')} route="/statistics">Statistics</NavButton>
       <NavButton onClick={() => onNavigate('/journal')} route="/journal">Weekly Journal</NavButton>
       <NavButton onClick={handleLogout} route="/">Logout</NavButton>
