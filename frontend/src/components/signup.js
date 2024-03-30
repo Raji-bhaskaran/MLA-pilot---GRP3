@@ -3,12 +3,12 @@ import { Form, Alert } from "react-bootstrap";
 import { Field, Formik } from "formik";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import config from '../config';
+import config from "../config";
 import * as yup from "yup";
 import Button from "./button";
 import { CheckCircleOutlineOutlined, CloseOutlined } from "@material-ui/icons";
 
-const Signup = ({ onSignup }) => {
+const Signup = ({ onSignup, colorAccessibility }) => {
   const SignUpSchema = yup.object().shape({
     username: yup.string().required("Username is required"),
     password: yup
@@ -141,6 +141,7 @@ const Signup = ({ onSignup }) => {
               variant="primary"
               onClick={handleSubmit}
               disabled={isSubmitting || !isValid}
+              colorAccessibility={colorAccessibility}
             >
               {isSubmitting ? "Signing up..." : "Signup"}
             </Button>
@@ -149,7 +150,12 @@ const Signup = ({ onSignup }) => {
       </Formik>
       <p className="mt-6">
         Already have an account?{" "}
-        <Link to="/login" className="text-red-pink">
+        <Link
+          to="/login"
+          className={`${
+            colorAccessibility ? "text-[#880125]" : "text-red-pink"
+          }`}
+        >
           Login
         </Link>
       </p>

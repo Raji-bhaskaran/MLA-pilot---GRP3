@@ -96,7 +96,7 @@ function App() {
                   isLoggedIn ? (
                     <Navigate to="/" />
                   ) : (
-                    <Login onLogin={handleLogin} />
+                    <Login onLogin={handleLogin} colorAccessibility={colorAccessibility} />
                   )
                 }
               />
@@ -111,6 +111,7 @@ function App() {
                         setIsLoggedIn(true);
                         setCurrentUser(username);
                       }}
+                      colorAccessibility={colorAccessibility}
                     />
                   )
                 }

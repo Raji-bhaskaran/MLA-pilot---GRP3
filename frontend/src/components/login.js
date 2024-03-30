@@ -3,11 +3,11 @@ import { Alert } from "react-bootstrap";
 import { Field, Form, Formik } from "formik";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import config from '../config';
+import config from "../config";
 import Button from "./button";
 import * as yup from "yup";
 
-const Login = ({ onLogin }) => {
+const Login = ({ onLogin, colorAccessibility }) => {
   const LoginSchema = yup.object().shape({
     username: yup.string().required("Username is required"),
     password: yup.string().required("Password is required"),
@@ -27,14 +27,20 @@ const Login = ({ onLogin }) => {
 
             if (response.status === 200) {
               onLogin(values.username);
-            } 
+            }
           } catch (error) {
-              if (error.response && error.response.status === 401) {
-                 actions.setFieldError("general", "Invalid username or password");
+            if (error.response && error.response.status === 401) {
+              actions.setFieldError("general", "Invalid username or password");
             } else if (error.response && error.response.status === 403) {
-                 actions.setFieldError("general", "Account is locked. Please try again later.");
+              actions.setFieldError(
+                "general",
+                "Account is locked. Please try again later."
+              );
             } else {
-              actions.setFieldError("general", "Failed to login. Please try again later.");
+              actions.setFieldError(
+                "general",
+                "Failed to login. Please try again later."
+              );
             }
           } finally {
             actions.setSubmitting(false);
@@ -79,7 +85,12 @@ const Login = ({ onLogin }) => {
               />
               <p className="text-fail mt-2">{errors.password}</p>
             </div>
-            <Button variant="primary" type="submit" disabled={isSubmitting}>
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={isSubmitting}
+              colorAccessibility={colorAccessibility}
+            >
               {isSubmitting ? "Logging in..." : "Login"}
             </Button>
           </Form>
@@ -88,7 +99,12 @@ const Login = ({ onLogin }) => {
 
       <p className="mt-6">
         Don't have an account?{" "}
-        <Link to="/signup" className="text-red-pink">
+        <Link
+          to="/signup"
+          className={`${
+            colorAccessibility ? "text-[#880125]" : "text-red-pink"
+          }`}
+        >
           Sign up
         </Link>
       </p>
