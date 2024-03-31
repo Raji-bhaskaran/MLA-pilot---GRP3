@@ -6,7 +6,7 @@ const Health = require('../models/health.model');
 // GET: Retrieve all health data
 router.get('/', async (req, res) => {
     try {
-      const exercises = await Health.find();
+      const health = await Health.find();
       res.json(health);
     } catch (error) {
       res.status(400).json({ error: 'Error: ' + error.message });
