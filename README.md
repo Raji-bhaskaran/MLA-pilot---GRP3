@@ -148,3 +148,44 @@ db.users.find()
 
 ## Deployment
 The application is containerized using Docker and can be deployed on any platform that supports Docker containers. For AWS deployment, a GitHub Actions pipeline is configured for CI/CD.
+
+## Monitoring & Analytics:
+
+
+#### 1. Start Services
+
+```
+docker-compose up -d
+```
+
+#### 2. Access Grafana
+
+Open your web browser and go to http://localhost:3000.
+Log in with the default username admin and the password you set in the docker-compose.yml file.
+
+#### 3. Configure Prometheus as a Data Source
+
+Once logged into Grafana, follow these steps to add Prometheus as a data source:
+Click on the gear icon on the left panel to open the Configuration menu.
+Select "Data Sources."
+Click on the "Add data source" button.
+Choose "Prometheus" as the data source type.
+Set the URL to http://prometheus:9090.
+Click "Save & Test" to ensure that Grafana can connect to your Prometheus instance.
+
+#### 4. Create Dashboards and Panels
+
+Click on Dashboards and then on Create new Dashboard".
+Click "Add new visualisation."
+From the panel editor, select the Prometheus data source from the drop-down menu.
+Write your Prometheus query to fetch the metrics you want to visualise.
+Customize your panel with the visualisation options provided by Grafana.
+Save the panel and dashboard when you're done.
+
+#### 5. Explore Metrics
+
+Use the Explore feature in Grafana to experiment with queries against your Prometheus data source and see the results in real time.
+
+#### 6. Set Up Alerts (Optional)
+
+Grafana can also be used to set up alerts based on specific conditions within your dashboard panels. To set up alerts, edit a panel and go to the "Alert" tab to define alert rules.
