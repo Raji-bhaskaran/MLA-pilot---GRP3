@@ -92,7 +92,7 @@ services:
       - ./prometheus:/etc/prometheus
     ports:
       - "9090:9090"
-    networks:	      
+    networks:
       - app-network
 
   grafana:
