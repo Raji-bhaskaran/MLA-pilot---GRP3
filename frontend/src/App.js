@@ -17,6 +17,7 @@ import Journal from "./components/journal";
 import Dashboard from "./components/dashboard";
 import logo from "./img/CFG_logo.png";
 import { FormControlLabel, Switch } from "@material-ui/core";
+import TrackHealth from "./components/trackHealth";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -35,7 +36,7 @@ function App() {
   };
 
   const toggleFontSize = () => {
-    setFontSize(fontSize === "text-base" ? "text-[32px]" : "text-base");
+    setFontSize(fontSize === "text-base" ? "text-[30px]" : "text-base");
   };
 
   const handleColorAccessibilityChange = (event) => {
@@ -46,7 +47,7 @@ function App() {
     <div className={`bg-grey min-h-svh ${fontSize}`}>
       <div
         className={`text-center ${
-          fontSize === "text-[32px]" ? "max-w-screen-lg" : "max-w-screen-md"
+          fontSize === "text-[30px]" ? "max-w-screen-lg" : "max-w-screen-md"
         } m-auto p-5`}
       >
         <Router>
@@ -66,7 +67,7 @@ function App() {
               control={
                 <Switch
                   onChange={toggleFontSize}
-                  checked={fontSize === "text-[32px]"}
+                  checked={fontSize === "text-[30px]"}
                 />
               }
               label="Font"
@@ -126,7 +127,7 @@ function App() {
                   isLoggedIn ? (
                     <Dashboard
                       currentUser={currentUser}
-                      chartSize={fontSize === "text-[32px]" ? "big" : "regular"}
+                      chartSize={fontSize === "text-[30px]" ? "big" : "regular"}
                       colorAccessibility={colorAccessibility}
                     />
                   ) : (
@@ -175,6 +176,19 @@ function App() {
                 element={
                   isLoggedIn ? (
                     <Navigate to="/dashboard" />
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                }
+              />
+              <Route
+                path="/trackHealth"
+                element={
+                  isLoggedIn ? (
+                    <TrackHealth
+                      currentUser={currentUser}
+                      colorAccessibility={colorAccessibility}
+                    />
                   ) : (
                     <Navigate to="/login" />
                   )
