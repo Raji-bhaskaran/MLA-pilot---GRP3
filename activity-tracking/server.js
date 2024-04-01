@@ -2,8 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const promClient = require('prom-client');
+require('dotenv').config(); 
+
 const config = require('./config.json');
-require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5300;
