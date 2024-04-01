@@ -1,13 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const promClient = require('prom-client');
 const config = require('./config.json');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5300;
-const baseUri = process.env.MONGO_URI || config.mongoUri;
-const database = process.env.MONGO_DB || config.mongoDb;
+const mongoUri = process.env.MONGODB_URI || config.mongoUri; // Fallback to config if env var is not set
 const mongoUri = `${baseUri}/${database}?authsource=admin`;
 
 // Middleware setup
@@ -16,7 +16,7 @@ app.use(express.json());
 
 // MongoDB connection
 mongoose
-  .connect(mongoUri, { useNewUrlParser: true })
+  .connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB database connection established successfully"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
@@ -27,7 +27,23 @@ connection.on('error', (error) => {
   console.error("MongoDB connection error:", error);
 });
 
-// Routes
+// Create a Registry to register the metrics
+const register = new promClient.Registry();
+
+// Enable the collection of default metrics
+promClient.collectDefaultMetrics({ register });
+
+// Add a route for the metrics endpoint
+app.get('/metrics', async (req, res) => {
+  try {
+    // Retrieve metrics from the registry
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  } catch (err) {
+    res.status(500).end(err);
+  }
+});
+
 const exercisesRouter = require('./routes/exercises');
 app.use('/exercises', exercisesRouter);
 
@@ -42,4 +58,4 @@ app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
 
-module.exports = app;  
+module.exports = app;
