@@ -85,6 +85,23 @@ def resolve_filteredStats(*_, name=None):
         }
     return payload
 
+@query.field("filteredHealthStats")
+def resolve_filteredHealthStats(*_, name=None):
+    try:
+        print("Resolving the list health stats info")
+        loadedStats = health_user_stats(name)
+        print(loadedStats)
+        payload = {
+            "success": True,
+            "results": loadedStats
+        }
+    except Exception as error:
+        payload = {
+            "success": False,
+            "errors": [str(error)]
+        }
+    return payload
+
 # Existing Flask routes
 @app.route('/')
 def index():
@@ -141,6 +158,8 @@ def stats():
 
     return stats
 
+# Create GraphQL schema
+schema = make_executable_schema(type_defs, query)
 
 @app.route('/stats/<username>', methods=['GET'])
 def user_stats(username):
@@ -252,7 +271,6 @@ def weekly_user_stats():
         traceback.print_exc()
         return jsonify(error="An internal error occurred"), 500
 
-
 @app.route('/health/stats')
 def health_stats():
     pipeline = [
@@ -272,22 +290,24 @@ def health_stats():
         },
         {
             "$project": {
+                "health": {
+                    "latestHeight": "$latestHeight",
+                    "latestWeight": "$latestWeight",
+                    "latestHeartRate": "$latestHeartRate",
+                    "latestBloodPressure": "$latestBloodPressure",
+                    "latestTiredness": "$latestTiredness",
+                    "latestStress": "$latestStress"
+                },
                 "username": "$_id",
-                "latestHeight": 1,
-                "latestWeight": 1,
-                "latestHeartRate": 1,
-                "latestBloodPressure": 1,
-                "latestTiredness": 1,
-                "latestStress": 1,
                 "_id": 0
             }
         },
         {
             "$addFields": {
-                "bmi": {
+                "health.bmi": {
                     "$divide": [
-                        "$latestWeight",
-                        {"$pow": [{"$divide": ["$latestHeight", 100]}, 2]}  # Convert height to meters before calculation
+                        "$health.latestWeight",
+                        {"$pow": [{"$divide": ["$health.latestHeight", 100]}, 2]}  # Convert height to meters before calculation
                     ]
                 }
             }
@@ -297,7 +317,6 @@ def health_stats():
     stats = list(db_health.health.aggregate(pipeline))
 
     return stats
-
 
 @app.route('/health/stats/<username>', methods=['GET'])
 def health_user_stats(username):
@@ -321,35 +340,37 @@ def health_user_stats(username):
         },
         {
             "$project": {
+                "health": {
+                    "latestHeight": "$latestHeight",
+                    "latestWeight": "$latestWeight",
+                    "latestHeartRate": "$latestHeartRate",
+                    "latestBloodPressure": "$latestBloodPressure",
+                    "latestTiredness": "$latestTiredness",
+                    "latestStress": "$latestStress"
+                },
                 "username": "$_id",
-                "latestHeight": 1,
-                "latestWeight": 1,
-                "latestHeartRate": 1,
-                "latestBloodPressure": 1,
-                "latestTiredness": 1,
-                "latestStress": 1,
                 "_id": 0
             }
         },
         {
             "$addFields": {
-                "bmi": {
+                "health.latestBMI": {
                     "$divide": [
-                        "$latestWeight",
-                        {"$pow": [{"$divide": ["$latestHeight", 100]}, 2]}  # Convert height to meters before calculation
+                        "$health.latestWeight",
+                        {"$pow": [{"$divide": ["$health.latestHeight", 100]}, 2]}  # Convert height to meters before calculation
                     ]
                 }
             }
         }
     ]
 
+    logging.info(f"Fetching weekly stats for user: {username}")
     stats = list(db_health.health.aggregate(pipeline))
 
     return stats
 
 # Create GraphQL schema
 schema = make_executable_schema(type_defs, query)
-
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5050)

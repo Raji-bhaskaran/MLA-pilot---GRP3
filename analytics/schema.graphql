@@ -7,6 +7,11 @@ type Stats{
     exercises: [Exercise]
 }
 
+type HealthStats{
+    username: String!
+    health: Health
+}
+
 type Exercise {
   exerciseType: String!
   totalDuration: Float!
@@ -15,13 +20,30 @@ type Exercise {
   avgPace: Float
 }
 
+type Health {
+  latestHeight: Float!
+  latestWeight: Float!
+  latestHeartRate: Float!
+  latestBloodPressure: String!
+  latestBMI: Float!
+  latestStress: String!
+  latestTiredness: String!
+}
+
 type StatsResult {
   success: Boolean!
   errors: [String]
   results: [Stats]
 }
 
+type HealthStatsResult {
+  success: Boolean!
+  errors: [String]
+  results: [HealthStats]
+}
+
 type Query {
     stats: StatsResult
     filteredStats(name: String): StatsResult
+    filteredHealthStats(name: String): HealthStatsResult
 }
