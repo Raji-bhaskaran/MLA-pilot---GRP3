@@ -61,6 +61,7 @@ function App() {
             <img src={logo} alt="CFG Fitness App Logo" className="w-20" />
           </div>
           <div className="mb-6">
+            <p className="m-0">Accessibility</p>
             <FormControlLabel
               control={
                 <Switch
@@ -68,7 +69,7 @@ function App() {
                   checked={fontSize === "text-[32px]"}
                 />
               }
-              label="Font Size"
+              label="Font"
             />
             <FormControlLabel
               control={
@@ -77,7 +78,7 @@ function App() {
                   onChange={handleColorAccessibilityChange}
                 />
               }
-              label="Color Accessibility"
+              label="Colour"
             />
           </div>
 
@@ -96,7 +97,10 @@ function App() {
                   isLoggedIn ? (
                     <Navigate to="/" />
                   ) : (
-                    <Login onLogin={handleLogin} colorAccessibility={colorAccessibility} />
+                    <Login
+                      onLogin={handleLogin}
+                      colorAccessibility={colorAccessibility}
+                    />
                   )
                 }
               />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Alert } from "react-bootstrap";
 import { Field, Form, Formik } from "formik";
 import axios from "axios";
@@ -6,8 +6,11 @@ import { Link } from "react-router-dom";
 import config from "../config";
 import Button from "./button";
 import * as yup from "yup";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
 const Login = ({ onLogin, colorAccessibility }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
   const LoginSchema = yup.object().shape({
     username: yup.string().required("Username is required"),
     password: yup.string().required("Password is required"),
@@ -74,15 +77,28 @@ const Login = ({ onLogin, colorAccessibility }) => {
 
             <div className="flex flex-col mb-10">
               <h3>Password</h3>
-              <Field
-                type="password"
-                placeholder="Password"
-                name="password"
-                value={values.password}
-                onChange={handleChange}
-                isInvalid={touched.password && !!errors.password}
-                className="p-2 rounded-lg h-10 text-xl"
-              />
+              <div>
+                <Field
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  name="password"
+                  value={values.password}
+                  onChange={handleChange}
+                  isInvalid={touched.password && !!errors.password}
+                  className="p-2 rounded-lg h-10 text-xl w-full"
+                />
+                {showPassword ? (
+                  <FaRegEye
+                    className="relative bottom-8 float-right right-4 w-6 h-6 cursor-pointer"
+                    onClick={() => setShowPassword(false)}
+                  />
+                ) : (
+                  <FaRegEyeSlash
+                    className="relative bottom-8 float-right right-4 w-6 h-6 cursor-pointer"
+                    onClick={() => setShowPassword(true)}
+                  />
+                )}
+              </div>
               <p className="text-fail mt-2">{errors.password}</p>
             </div>
             <Button

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, pieArcLabelClasses } from "@mui/x-charts/PieChart";
-import { getAllExercisesByUser } from "../api";
+import { getAllExercisesByUser } from "../apiExercise";
 import { startOfWeek, endOfWeek, subWeeks } from "date-fns";
 
 const Dashboard = ({ currentUser, chartSize, colorAccessibility }) => {
