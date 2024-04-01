@@ -44,6 +44,12 @@ const NavbarComponent = ({ onLogout, colorAccessibility }) => {
       >
         Track New Exercise
       </NavButton>
+      <NavButton
+        onClick={() => onNavigate("/trackHealth")}
+        route="/trackHealth"
+      >
+        Track Health Data
+      </NavButton>
       <NavButton onClick={() => onNavigate("/statistics")} route="/statistics">
         Statistics
       </NavButton>
