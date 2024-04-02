@@ -27,7 +27,7 @@ const theme = createTheme({
   },
 });
 
-const TrackExercise = ({ currentUser }) => {
+const TrackExercise = ({ currentUser, colorAccessibility }) => {
   const [message, setMessage] = useState("");
 
   const TrackExerciseSchema = yup.object().shape({
@@ -179,7 +179,11 @@ const TrackExercise = ({ currentUser }) => {
                     name="description"
                     as="textarea"
                     rows={3}
-                    className="form-control"
+                    className={`${
+                      colorAccessibility
+                        ? "form-control border-4 border-black"
+                        : "form-control"
+                    }`}
                   />
                   <ErrorMessage
                     name="description"
@@ -195,7 +199,11 @@ const TrackExercise = ({ currentUser }) => {
                     <Field
                       type="number"
                       name="duration"
-                      className="form-control"
+                      className={`${
+                        colorAccessibility
+                          ? "form-control border-4 border-black"
+                          : "form-control"
+                      }`}
                     />
                     <ErrorMessage
                       name="duration"
@@ -210,7 +218,11 @@ const TrackExercise = ({ currentUser }) => {
                     <Field
                       type="number"
                       name="distance"
-                      className="form-control"
+                      className={`${
+                        colorAccessibility
+                          ? "form-control border-4 border-black"
+                          : "form-control"
+                      }`}
                       step="0.01"
                     />
                     <ErrorMessage
@@ -235,6 +247,7 @@ const TrackExercise = ({ currentUser }) => {
                     min={0}
                     max={100}
                     color="primary"
+                    colorAccessibility={colorAccessibility}
                   />
                   <ErrorMessage
                     name="levelOfEffort"
@@ -247,6 +260,9 @@ const TrackExercise = ({ currentUser }) => {
                     variant="primary"
                     disabled={!dirty || !touched || !isValid}
                     onClick={handleSubmit}
+                    className={
+                      colorAccessibility ? "border-4 border-black" : ""
+                    }
                   >
                     Save activity
                   </Button>
