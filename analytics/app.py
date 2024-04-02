@@ -5,6 +5,7 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS
 from urllib.parse import quote_plus
 from bson import json_util
+from prometheus_flask_exporter import PrometheusMetrics
 import traceback
 import logging
 import os
@@ -13,6 +14,7 @@ from ariadne import load_schema_from_path, make_executable_schema, graphql_sync,
 from ariadne.constants import PLAYGROUND_HTML
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
 CORS(app, resources={r"/*": {"origins": "*"}},
      methods="GET,HEAD,POST,OPTIONS,PUT,PATCH,DELETE")
 
@@ -26,6 +28,8 @@ client_activity = MongoClient(mongo_uri_activity)
 db_activity = client_activity[mongo_db_activity]
 client_health = MongoClient(mongo_uri_health)
 db_health = client_health[mongo_db_health]
+
+metrics.info('app_info', 'Application info', version='1.0.3')
 
 # Load GraphQL schema
 type_defs = load_schema_from_path("schema.graphql")

@@ -1,8 +1,8 @@
-import React from 'react';
-import { Slider, styled } from '@material-ui/core';
-import { useField, useFormikContext } from 'formik';
+import React from "react";
+import { Slider, styled } from "@material-ui/core";
+import { useField, useFormikContext } from "formik";
 
-const CustomSlider = ({ name, ...props }) => {
+const CustomSlider = ({ name, colorAccessibility, ...props }) => {
   const { setFieldValue } = useFormikContext();
   const [field] = useField(name);
 
@@ -11,26 +11,25 @@ const CustomSlider = ({ name, ...props }) => {
   };
 
   const SliderStyled = styled(Slider)({
-    '& .MuiSlider-rail': {
-      height: '20px',
-      color: '#D3FF86',
+    "& .MuiSlider-rail": {
+      height: "20px",
+      color: `${colorAccessibility ? "#000000" : "#D3FF86"}`,
     },
-    '& .MuiSlider-track': {
-      height: '20px',
-      color: '#D3FF86',
+    "& .MuiSlider-track": {
+      height: "20px",
+      color: `${colorAccessibility ? "#000000" : "#D3FF86"}`,
     },
-    '& .MuiSlider-thumb': {
-      color: '#D3FF86',
-      height: '30px',
-      width: '16px',
-      backgroundColor: '#fff',
-      border: '2px solid currentColor',
+    "& .MuiSlider-thumb": {
+      color: `${colorAccessibility ? "#FFFFFF" : "#D3FF86"}`,
+      height: "30px",
+      width: "16px",
+      backgroundColor: "#fff",
+      border: `${colorAccessibility ? "2px solid #000000" : "2px solid currentColor"}`,
     },
-    '& .MuiSlider-mark': {
-      color: '#D3FF86',
-      height: '20px',
-      width: '5px',
-
+    "& .MuiSlider-mark": {
+      color: `${colorAccessibility ? "#000000" : "#D3FF86"}`,
+      height: "20px",
+      width: "5px",
     },
   });
 
