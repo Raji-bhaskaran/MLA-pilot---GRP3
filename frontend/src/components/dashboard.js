@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, pieArcLabelClasses } from "@mui/x-charts/PieChart";
 import { getAllExercisesByUser } from "../apiExercise";
+import { getAllHealthByUser } from "../apiHealth";
 import { startOfWeek, endOfWeek, subWeeks } from "date-fns";
 
 const Dashboard = ({ currentUser, chartSize, colorAccessibility }) => {
   const [exercises, setExercises] = useState();
   const [exercisesThisWeek, setExercisesThisWeek] = useState([]);
   const [exercisesPreviousWeek, setExercisesPreviousWeek] = useState([]);
+  const [health, setHealth] = useState();
+  const [latestHealth, setLatestHealth] = useState([]);
 
   const fetchAllExercisesByUser = async (username) => {
     try {
@@ -90,6 +93,60 @@ const Dashboard = ({ currentUser, chartSize, colorAccessibility }) => {
     },
   ];
 
+  const fetchAllHealthByUser = async (username) => {
+    try {
+      const response = await getAllHealthByUser(username);
+      console.log("All health by users:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch all health:", error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    fetchAllHealthByUser(currentUser).then((healthData) => {
+      setHealth(healthData);
+    });
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (health) {
+      const sortedHealth = health.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const latestHealth = sortedHealth[0];
+      setLatestHealth(latestHealth);
+    }
+  }, [health]);
+
+  const calculateBMI = (weight, height) => {
+    // Convert height from cm to meters
+    const heightInMeters = height / 100;
+    // Formula: BMI = weight (kg) / (height (m) * height (m))
+    const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(1);
+    return bmi;
+};
+  
+  const weight = latestHealth.weight;
+
+  const height = latestHealth.height;
+
+  const bmi = calculateBMI(weight, height);
+
+  const getBMILabel = (bmi) => {
+    if (bmi >= 30) {
+      return "Obese";
+    } else if (bmi >= 25) {
+      return "Overweight";
+    } else if (bmi >= 18.5) {
+      return "Healthy";
+    } else if (bmi >= 0.1) {
+      return "Underweight";
+    } else {
+      return "No BMI calculated";
+    }
+  };
+
+  
   const sizing = {
     margin: { right: 5 },
     width: chartSize === "big" ? 300 : 150,
@@ -175,10 +232,10 @@ const Dashboard = ({ currentUser, chartSize, colorAccessibility }) => {
         </div>
       </div>
       <div className="py-7">
-        <h4 className="px-7">Your info</h4>
+        <h4 className="px-7">Your health info</h4>
         <div className="flex justify-around">
-          <p>Weight</p>
-          <p>BMI</p>
+          <p className="font-bold">Weight: {weight}kg</p>
+          <p className="font-bold">BMI: {bmi} ({getBMILabel(bmi)}) </p>
         </div>
       </div>
     </>

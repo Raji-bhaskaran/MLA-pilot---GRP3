@@ -6,7 +6,7 @@ const Health = require('../models/health.model');
 // GET: Retrieve all health data
 router.get('/', async (req, res) => {
     try {
-      const exercises = await Health.find();
+      const health = await Health.find();
       res.json(health);
     } catch (error) {
       res.status(400).json({ error: 'Error: ' + error.message });
@@ -37,17 +37,15 @@ router.post('/add', async (req, res) => {
   }
 });
 
-// GET: Retrieve health data by ID
-router.get('/:id', async (req, res) => {
+// GET: Retrieve health data by username
+router.get("/:username/", async (req, res) => {
   try {
-    const health = await Health.findById(req.params.id);
-    if (!health) {
-      res.status(404).json({ error: 'Health data not found' });
-      return;
-    }
+    const health = await Health.find({
+      username: req.params.username,
+    });
     res.json(health);
   } catch (error) {
-    res.status(400).json({ error: 'Error: ' + error.message });
+    res.status(400).json({ error: "Error: " + error.message });
   }
 });
 

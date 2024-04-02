@@ -19,11 +19,15 @@ CORS(app, resources={r"/*": {"origins": "*"}},
      methods="GET,HEAD,POST,OPTIONS,PUT,PATCH,DELETE")
 
 load_dotenv()
-mongo_uri = os.getenv('MONGO_URI')
-mongo_db = os.getenv('MONGO_DB')
+mongo_uri_activity = os.getenv('MONGO_URI_ACTIVITY')
+mongo_db_activity = os.getenv('MONGO_DB_ACTIVITY')
+mongo_uri_health = os.getenv('MONGO_URI_HEALTH')
+mongo_db_health = os.getenv('MONGO_DB_HEALTH')
 
-client = MongoClient(mongo_uri)
-db = client[mongo_db]
+client_activity = MongoClient(mongo_uri_activity)
+db_activity = client_activity[mongo_db_activity]
+client_health = MongoClient(mongo_uri_health)
+db_health = client_health[mongo_db_health]
 
 metrics.info('app_info', 'Application info', version='1.0.3')
 
@@ -84,11 +88,28 @@ def resolve_filteredStats(*_, name=None):
             "errors": [str(error)]
         }
     return payload
-    
+
+@query.field("filteredHealthStats")
+def resolve_filteredHealthStats(*_, name=None):
+    try:
+        print("Resolving the list health stats info")
+        loadedStats = health_user_stats(name)
+        print(loadedStats)
+        payload = {
+            "success": True,
+            "results": loadedStats
+        }
+    except Exception as error:
+        payload = {
+            "success": False,
+            "errors": [str(error)]
+        }
+    return payload
+
 # Existing Flask routes
 @app.route('/')
 def index():
-    exercises = db.exercises.find()
+    exercises = db_activity.exercises.find()
     exercises_list = list(exercises)
     return json_util.dumps(exercises_list)
 
@@ -114,7 +135,7 @@ def stats():
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
                         "totalDuration": "$totalDuration",
-                        "totalDistance": "$totalDistance",
+                        "totalDistance": {"$round": ["$totalDistance", 2]},
                         "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
@@ -129,7 +150,7 @@ def stats():
         }
     ]
 
-    stats = list(db.exercises.aggregate(pipeline))
+    stats = list(db_activity.exercises.aggregate(pipeline))
 
     # Calculate pace (seconds per km) for each exercise type
     for user_stats in stats:
@@ -141,6 +162,8 @@ def stats():
 
     return stats
 
+# Create GraphQL schema
+schema = make_executable_schema(type_defs, query)
 
 @app.route('/stats/<username>', methods=['GET'])
 def user_stats(username):
@@ -166,7 +189,7 @@ def user_stats(username):
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
                         "totalDuration": "$totalDuration",
-                        "totalDistance": "$totalDistance",
+                        "totalDistance": {"$round": ["$totalDistance", 2]},
                         "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
@@ -181,7 +204,7 @@ def user_stats(username):
         }
     ]
 
-    stats = list(db.exercises.aggregate(pipeline))
+    stats = list(db_activity.exercises.aggregate(pipeline))
 
     # Calculate pace (seconds per km) for each exercise type
     for user_stats in stats:
@@ -236,7 +259,7 @@ def weekly_user_stats():
             "$project": {
                 "exerciseType": "$_id.exerciseType",
                 "totalDuration": 1,
-                "totalDistance": 1,
+                "totalDistance": {"$round": ["$totalDistance",2]},
                 "avgPace": 1,
                 "avgLevelOfEffort": 1,
                 "_id": 0
@@ -245,12 +268,113 @@ def weekly_user_stats():
     ]
 
     try:
-        stats = list(db.exercises.aggregate(pipeline))
+        stats = list(db_activity.exercises.aggregate(pipeline))
         return jsonify(stats=stats)
     except Exception as e:
         current_app.logger.error(f"An error occurred while querying MongoDB: {e}")
         traceback.print_exc()
         return jsonify(error="An internal error occurred"), 500
+
+@app.route('/health/stats')
+def health_stats():
+    pipeline = [
+        {
+            "$sort": {"createdAt": -1}
+        },
+        {
+            "$group": {
+                "_id": "$username",
+                "latestHeight": {"$first": "$height"},
+                "latestWeight": {"$first": "$weight"},
+                "latestHeartRate": {"$first": "$restingHeartRate"},
+                "latestBloodPressure": {"$first": "$bloodPressure"},
+                "latestTiredness": {"$first": "$tiredness"},
+                "latestStress": {"$first": "$stress"}
+            }
+        },
+        {
+            "$project": {
+                "health": {
+                    "latestHeight": "$latestHeight",
+                    "latestWeight": "$latestWeight",
+                    "latestHeartRate": "$latestHeartRate",
+                    "latestBloodPressure": "$latestBloodPressure",
+                    "latestTiredness": "$latestTiredness",
+                    "latestStress": "$latestStress"
+                },
+                "username": "$_id",
+                "_id": 0
+            }
+        },
+        {
+            "$addFields": {
+                "health.bmi": {
+                    "$divide": [
+                        "$health.latestWeight",
+                        {"$pow": [{"$divide": ["$health.latestHeight", 100]}, 2]}  # Convert height to meters before calculation
+                    ]
+                }
+            }
+        }
+    ]
+
+    stats = list(db_health.health.aggregate(pipeline))
+
+    return stats
+
+@app.route('/health/stats/<username>', methods=['GET'])
+def health_user_stats(username):
+    pipeline = [
+        {
+            "$match": {"username": username}
+        },
+        {
+            "$sort": {"createdAt": -1}
+        },
+        {
+            "$group": {
+                "_id": "$username",
+                "latestHeight": {"$first": "$height"},
+                "latestWeight": {"$first": "$weight"},
+                "latestHeartRate": {"$first": "$restingHeartRate"},
+                "latestBloodPressure": {"$first": "$bloodPressure"},
+                "latestTiredness": {"$first": "$tiredness"},
+                "latestStress": {"$first": "$stress"}
+            }
+        },
+        {
+            "$project": {
+                "health": {
+                    "latestHeight": "$latestHeight",
+                    "latestWeight": "$latestWeight",
+                    "latestHeartRate": "$latestHeartRate",
+                    "latestBloodPressure": "$latestBloodPressure",
+                    "latestTiredness": "$latestTiredness",
+                    "latestStress": "$latestStress"
+                },
+                "username": "$_id",
+                "_id": 0
+            }
+        },
+        {
+            "$addFields": {
+                "health.latestBMI": {
+                    "$divide": [
+                        "$health.latestWeight",
+                        {"$pow": [{"$divide": ["$health.latestHeight", 100]}, 2]}  # Convert height to meters before calculation
+                    ]
+                }
+            }
+        }
+    ]
+
+    logging.info(f"Fetching weekly stats for user: {username}")
+    stats = list(db_health.health.aggregate(pipeline))
+
+    return stats
+
+# Create GraphQL schema
+schema = make_executable_schema(type_defs, query)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5050)

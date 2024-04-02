@@ -29,7 +29,7 @@ const theme = createTheme({
 const TrackHealth = ({ currentUser, colorAccessibility }) => {
   const [message, setMessage] = useState("");
   const [lastHeight, setLastHeight] = useState(() => {
-    const storedHeight = localStorage.getItem("lastHeight");
+    const storedHeight = localStorage.getItem(`${currentUser}_lastHeight`);
     return storedHeight || ""; // Return stored height if exists, otherwise default to empty string
   });
 
@@ -37,7 +37,7 @@ const TrackHealth = ({ currentUser, colorAccessibility }) => {
   const handleHeightChange = (event) => {
     const { value } = event.target;
     setLastHeight(value);
-    localStorage.setItem("lastHeight", value);
+    localStorage.setItem(`${currentUser}_lastHeight`, value);
   };
 
   const TrackHealthSchema = yup.object().shape({
@@ -81,7 +81,7 @@ const TrackHealth = ({ currentUser, colorAccessibility }) => {
 
               // Update lastHeight state and localStorage
               setLastHeight(values.height);
-              localStorage.setItem("lastHeight", values.height);
+              localStorage.setItem(`${currentUser}_lastHeight`, values.height);
 
               setMessage("Health data added successfully! Well done!");
               setTimeout(() => setMessage(""), 5000);
