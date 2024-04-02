@@ -135,7 +135,7 @@ def stats():
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
                         "totalDuration": "$totalDuration",
-                        "totalDistance": "$totalDistance",
+                        "totalDistance": {"$round": ["$totalDistance", 2]},
                         "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
@@ -189,7 +189,7 @@ def user_stats(username):
                     "$push": {
                         "exerciseType": "$_id.exerciseType",
                         "totalDuration": "$totalDuration",
-                        "totalDistance": "$totalDistance",
+                        "totalDistance": {"$round": ["$totalDistance", 2]},
                         "avgLevelOfEffort": "$avgLevelOfEffort"
                     }
                 }
@@ -259,7 +259,7 @@ def weekly_user_stats():
             "$project": {
                 "exerciseType": "$_id.exerciseType",
                 "totalDuration": 1,
-                "totalDistance": 1,
+                "totalDistance": {"$round": ["$totalDistance",2]},
                 "avgPace": 1,
                 "avgLevelOfEffort": 1,
                 "_id": 0
